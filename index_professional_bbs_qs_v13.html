@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>html,body{background:#14171B;margin:0;}  .project-panel-pro{max-width:1100px;width:96vw}.project-toolbar{display:grid;grid-template-columns:minmax(180px,1.8fr) minmax(150px,1fr) auto;gap:10px;align-items:end;margin:12px 0 14px}.project-toolbar label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}.project-new-btn{height:42px;white-space:nowrap}.project-summary-header{display:grid;gap:3px;padding:14px 16px;margin-bottom:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel-alt)}.project-summary-header .project-title{font-size:18px;font-weight:800}.project-summary-header .project-location{font-size:13px;color:var(--muted)}.project-summary-header .project-members{font-size:12px;color:var(--muted)}.project-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}.project-bbs-table{width:100%;min-width:760px;border-collapse:collapse;font-size:12px}.project-bbs-table th{padding:10px 8px;background:var(--panel-alt);border-bottom:2px solid var(--line);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.project-bbs-table td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}.project-bbs-table td:first-child{text-align:left;font-weight:700;min-width:130px}.project-bbs-table tr.member-start td{border-top:1px solid var(--line)}.project-bbs-table tfoot td{font-weight:800;background:var(--panel-alt);border-top:2px solid var(--line)}.project-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.project-actions button{flex:1;min-width:145px}@media(max-width:700px){.project-toolbar{grid-template-columns:1fr 1fr}.project-new-btn{grid-column:1/-1;width:100%}.project-panel-pro{width:98vw}}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Rebar BBS Calculator — Beam / Column / Footing / Slab</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14171B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BBS Calc">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#14171B; --panel:#1E2228; --panel-alt:#262B33; --line:#333941;
+    --text:#ECEAE4; --muted:#8B93A0; --accent:#FF7A29; --steel:#5FA8D3; --good:#6FCF97;
+    --c-beam:#FF7A29; --c-col:#5FA8D3; --c-foot:#6FCF97; --c-slab:#C792EA;
+  }
+  *{box-sizing:border-box;}
+  button, select, input, a{ touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;}
+  body{padding-bottom:84px;}
+  h1,h2,h3{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-stretch:condensed;font-weight:700;letter-spacing:.02em;margin:0;}
+  .wrap{max-width:640px;margin:0 auto;padding:14px 14px 8px;}
+  header.top{padding:20px 132px 12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:6;}
+
+  .hdr-projects-btn{position:absolute;top:16px;right:14px;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);height:42px;padding:0 12px 0 10px;border-radius:21px;display:flex;align-items:center;gap:6px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12.5px;font-weight:600;letter-spacing:.02em;z-index:20;transition:transform .1s ease, border-color .15s ease, background .15s ease;}
+  .hdr-projects-btn:active{transform:scale(0.93);background:var(--line);}
+  .hdr-projects-btn .hpb-ico{font-size:16px;line-height:1;}
+  .hdr-projects-btn .hpb-badge{background:var(--accent);color:#1A1200;font-size:10.5px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+  .modal-overlay.hidden{display:none;}
+  .modal-sheet{background:var(--panel);border:1px solid var(--line);border-radius:16px 16px 0 0;padding:20px 18px 28px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;}
+  .modal-sheet h2{font-size:22px;margin-bottom:4px;}
+  .modal-sheet .desc{color:var(--muted);font-size:12.5px;margin-bottom:16px;}
+  .modal-close{float:right;background:none;border:none;color:var(--muted);font-size:22px;line-height:1;}
+  .btn-primary{background:var(--accent);color:#1A1200;border:none;padding:14px 16px;min-height:48px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-weight:600;font-size:14px;width:100%;transition:transform .1s ease, opacity .15s ease;}
+  .btn-primary:active{transform:scale(0.97);opacity:0.9;}
+  .btn-secondary{background:var(--panel-alt);color:var(--text);border:1px solid var(--line);padding:12px 14px;min-height:44px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;transition:transform .1s ease, background .15s ease;}
+  .btn-secondary:active{transform:scale(0.96);background:var(--line);}
+  .proj-switch-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;}
+  .proj-switch-row select{flex:1;}
+  .project-sort-row{display:flex;gap:8px;align-items:center;margin:-4px 0 12px;}
+  .project-sort-row label{font-size:11px;color:var(--muted);white-space:nowrap;}
+  .project-sort-row select{flex:1;min-height:40px;}
+  .project-meta{font-size:10px;color:var(--muted);margin-top:3px;}
+
+  .member-form{background:var(--panel-alt);border:1px dashed var(--line);border-radius:8px;padding:12px;margin-bottom:14px;}
+  .member-list-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12.5px;}
+  .member-list-row .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;}
+  .member-list-row .del{color:#E05A4A;background:none;border:none;font-size:16px;padding:4px 8px;}
+  .element-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .element-chip{border:1px solid;border-radius:20px;padding:4px 10px;font-size:10.5px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;background:rgba(255,255,255,0.03);}
+  .summary-total{background:var(--panel-alt);border-radius:8px;padding:14px;margin-top:10px;text-align:center;}
+  .summary-total .num{color:var(--good);font-size:26px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-weight:600;}
+  .store-chip{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);margin-bottom:10px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  .store-chip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;}
+
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--panel-alt);border:1px solid var(--accent);color:var(--text);padding:12px 20px;border-radius:10px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;z-index:100;opacity:0;transition:opacity .25s ease, transform .25s ease;pointer-events:none;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.warn{border-color:#E05A4A;color:#FFD4CE;}
+  .toast.good{border-color:var(--good);}
+  .storage-banner{background:#3A2416;border:1px solid #E0A54A;color:#F5D9A8;font-size:11.5px;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:none;line-height:1.4;}
+  .storage-banner.show{display:block;}
+  .project-save-status{font-size:11px;color:var(--muted);padding:6px 0 2px;}
+  .project-save-status.ok{color:var(--good);}
+  .project-save-status.pending{color:#E0A54A;}
+  header.top .eyebrow{color:var(--accent);font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;}
+  header.top h1{font-size:clamp(19px,6.2vw,26px);line-height:1.05;color:var(--text);}
+  header.top .sub{color:var(--muted);font-size:12px;margin-top:5px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+
+  .tabs{display:flex;gap:6px;position:sticky;top:76px;background:var(--bg);z-index:5;padding:10px 14px;border-bottom:1px solid var(--line);max-width:640px;margin:0 auto;}
+  .tabs button{flex:1;background:var(--panel);border:1px solid var(--line);border-bottom:2px solid transparent;color:var(--muted);padding:13px 4px;min-height:46px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;letter-spacing:.03em;text-transform:uppercase;transition:background .22s ease, color .22s ease, border-color .22s ease, transform .1s ease;}
+  .tabs button:active{transform:scale(0.95);}
+  .tabs button[data-tab="beam"]{border-bottom-color:rgba(255,122,41,.35);}
+  .tabs button[data-tab="col"]{border-bottom-color:rgba(95,168,211,.35);}
+  .tabs button[data-tab="foot"]{border-bottom-color:rgba(111,207,151,.35);}
+  .tabs button[data-tab="slab"]{border-bottom-color:rgba(199,146,234,.35);}
+  .tabs button.active{font-weight:600;}
+  .tabs button[data-tab="beam"].active{background:var(--c-beam);border-color:var(--c-beam);color:#241200;}
+  .tabs button[data-tab="col"].active{background:var(--c-col);border-color:var(--c-col);color:#04202E;}
+  .tabs button[data-tab="foot"].active{background:var(--c-foot);border-color:var(--c-foot);color:#062616;}
+  .tabs button[data-tab="slab"].active{background:var(--c-slab);border-color:var(--c-slab);color:#210836;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 6px 16px -10px rgba(0,0,0,.6);}
+  .card h2{font-size:19px;color:var(--text);margin-bottom:2px;}
+  .card .desc{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.4;}
+  .row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .field{flex:1 1 110px;min-width:100px;}
+  .field label{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  input[type=number],select{width:100%;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);padding:10px 8px;border-radius:6px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:15px;}
+  input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);}
+  select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+  .checkline{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .checkline input{width:16px;height:16px;}
+
+  details.adv{margin-top:6px;}
+  details.adv summary{cursor:pointer;color:var(--steel);font-size:12px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;letter-spacing:.03em;}
+  details.adv .row{margin-top:10px;}
+
+  .diagram{display:flex;justify-content:center;padding:6px 0 4px;}
+  .diagram svg{width:100%;max-width:220px;height:auto;}
+
+  .outline{margin-top:10px;background:var(--panel-alt);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;}
+  .outline .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  .outline .val{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:21px;color:var(--tone, var(--accent));font-weight:600;margin-top:2px;transition:color .22s ease;}
+  .outline .val small{color:var(--muted);font-size:13px;margin-left:6px;}
+  .outline .formula{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;color:var(--muted);margin-top:6px;word-break:break-word;}
+
+  .subhead{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;color:var(--steel);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--line);}
+  .subhead:first-of-type{border-top:none;padding-top:0;margin-top:4px;}
+
+  table{width:100%;min-width:560px;border-collapse:collapse;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;margin-top:4px;}
+  th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th:first-child,td:first-child{text-align:left;}
+  th{color:var(--muted);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
+  td.tot{color:var(--good);font-weight:600;}
+  tfoot td{border-bottom:none;border-top:2px solid var(--line);color:var(--tone, var(--accent));font-weight:600;padding-top:10px;}
+  .ref-table{overflow-x:auto;}
+
+  .btn-tab-pdf{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:transparent;border:1px solid var(--tone, var(--accent));color:var(--tone, var(--accent));padding:11px 14px;min-height:42px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;font-weight:600;letter-spacing:.02em;transition:transform .1s ease, background .15s ease;width:100%;justify-content:center;}
+  .btn-tab-pdf:active{transform:scale(0.97);background:rgba(255,255,255,0.06);}
+
+  .tab-viewport{overflow:hidden;position:relative;min-height:220px;transition:height .3s cubic-bezier(.22,.68,0,1);}
+  .tab-track{display:flex;align-items:flex-start;width:400%;transition:transform .38s cubic-bezier(.22,.68,0,1);will-change:transform;}
+  .tabpanel{overflow:hidden;flex:0 0 25%;max-width:25%;min-width:0;padding:0 1px;}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:10;pointer-events:auto;}
+  .bar .lbl{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .bar .val{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:22px;color:var(--good);font-weight:600;}
+  .bar button{background:var(--accent);color:#1A1200;border:none;padding:14px 20px;min-height:48px;min-width:120px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-weight:600;font-size:13px;letter-spacing:.02em;transition:transform .1s ease, opacity .15s ease;position:relative;z-index:11;cursor:pointer;}
+  .bar button:active{transform:scale(0.95);opacity:0.9;}
+  .bar-total{flex:1;min-width:0;}
+  .bottom-share-btn{
+    flex:0 0 48px!important;
+    min-width:48px!important;
+    width:48px;
+    height:48px;
+    padding:0!important;
+    border-radius:50%!important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--panel-alt)!important;
+    color:var(--text)!important;
+    border:1px solid var(--line)!important;
+  }
+  .bottom-share-btn svg{
+    width:23px;
+    height:23px;
+    fill:currentColor;
+    display:block;
+  }
+  .bottom-save-btn{
+    flex:0 0 auto;
+    min-width:120px!important;
+  }
+
+  .note{font-size:11.5px;color:var(--muted);line-height:1.5;padding:6px 16px 20px;}
+  .note b{color:var(--text);}
+
+  @page{ margin: 12mm; }
+  @media print{
+    .bar,.tabs,details.adv,header.top .sub,.hdr-projects-btn{display:none!important;}
+    body{background:#fff;color:#000;padding-bottom:0;}
+    .wrap{max-width:100%;}
+    .tab-viewport{overflow:visible!important;height:auto!important;}
+    .tab-track{display:block!important;width:100%!important;transform:none!important;}
+    .tabpanel{overflow:hidden;display:none!important;max-width:100%!important;flex-basis:100%!important;}
+    .tabpanel.active{display:block!important;}
+    .card{border:1px solid #999;background:#fff;break-inside:avoid;page-break-inside:avoid;}
+    .outline{background:#f4f4f4;}
+    table{font-size:10px;min-width:0;}
+    th,td{white-space:normal;padding:5px 3px;}
+    .ref-table{overflow-x:visible;}
+    .btn-tab-pdf{display:none!important;}
+  }
+</style>
+
+<style id="element-tab-animation-fix">
+.tabs{overflow:hidden}
+.tabs button{position:relative;transition:background-color .28s ease,color .28s ease,border-color .28s ease,transform .18s ease}
+.tabs button.active{box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+.tab-viewport{transition:height .32s cubic-bezier(.22,.68,0,1)}
+.tab-track{transition:transform .42s cubic-bezier(.22,.68,0,1)}
+.tabpanel{transition:opacity .25s ease,transform .25s ease}
+</style>
+<style id="excel-bbs-ui">
+.member-type-badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:800;background:var(--panel-alt);border:1px solid var(--line)}
+.shape-sub{display:block;color:var(--muted);font-size:9px;margin-top:2px;white-space:normal;max-width:190px}
+.pw-empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:8px}
+.pw-reference-box{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-alt);font-size:11px;color:var(--muted);line-height:1.55}
+.pw-reference-box b{display:block;color:var(--text);margin-bottom:4px}
+</style><style id="qs-professional-style">
+.qs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px}
+.qs-card{padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-alt)}
+.qs-card span{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.qs-card b{display:block;margin-top:4px;font-size:16px}
+.qs-controls{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:14px}
+.qs-section{margin-top:14px}.qs-section h3{font-size:14px;margin:0 0 8px}.qs-table{width:100%;border-collapse:collapse;font-size:11px}.qs-table th,.qs-table td{padding:8px;border-bottom:1px solid var(--line);text-align:right}.qs-table th:first-child,.qs-table td:first-child{text-align:left}.qs-table th{font-size:9px;color:var(--muted);text-transform:uppercase}.qs-table tfoot td{font-weight:800;background:var(--panel-alt)}
+.qs-checks{display:grid;gap:6px}.qs-check{padding:9px;border-radius:8px;border:1px solid var(--line);font-size:11px}.qs-check b{display:inline-block;width:20px}.qs-check.ok{border-color:#397A55}.qs-check.warn{border-color:#8A6B32}.qs-check.error{border-color:#9B4444}.qs-empty{text-align:center!important;color:var(--muted)}
+.qs-warning{margin-top:6px;color:#C89B55}
+@media(max-width:700px){.qs-grid{grid-template-columns:1fr}.qs-controls{grid-template-columns:1fr 1fr}.qs-controls button{grid-column:1/-1}}
+</style>
+<style id="mobile-bbs-summary-fix">
+/* Mobile BBS summary: horizontal finger glide, fixed readable cells, no page-wide overflow */
+.summary-table-wrap,.table-wrap,.bbs-table-wrap,.project-table-wrap{
+  width:100%;
+  max-width:100%;
+  overflow-x:auto!important;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x pan-y;
+  scrollbar-width:thin;
+}
+.summary-table-wrap table,.table-wrap table,.bbs-table-wrap table{
+  min-width:760px;
+}
+.summary-table-wrap::-webkit-scrollbar,.table-wrap::-webkit-scrollbar,.bbs-table-wrap::-webkit-scrollbar,.project-table-wrap::-webkit-scrollbar{
+  height:7px;
+}
+.summary-table-wrap::-webkit-scrollbar-thumb,.table-wrap::-webkit-scrollbar-thumb,.bbs-table-wrap::-webkit-scrollbar-thumb,.project-table-wrap::-webkit-scrollbar-thumb{
+  border-radius:8px;background:rgba(128,128,128,.45);
+}
+/* Keep number fields usable while scrolling */
+.summary-table-wrap input,.table-wrap input,.bbs-table-wrap input{
+  min-width:64px;
+  font-size:14px;
+  touch-action:manipulation;
+}
+/* A visible hint under each summary on small screens */
+.mobile-swipe-hint{display:none;font-size:10px;color:var(--muted);padding:5px 2px;text-align:right}
+.bbs-scroll-slider{
+  -webkit-appearance:none;appearance:none;
+  display:none;
+  width:100%;
+  height:22px;
+  margin:2px 0;
+  background:transparent;
+  cursor:grab;
+  touch-action:pan-x;
+  opacity:0;
+}
+.bbs-scroll-slider:active{cursor:grabbing}
+.bbs-scroll-slider::-webkit-slider-runnable-track{
+  height:22px;background:transparent;border:none;
+}
+.bbs-scroll-slider::-moz-range-track{
+  height:22px;background:transparent;border:none;
+}
+.bbs-scroll-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:44px;height:22px;border-radius:8px;
+  background:transparent;
+  margin-top:0;
+  box-shadow:none;
+  border:none;
+}
+.bbs-scroll-slider::-moz-range-thumb{
+  width:44px;height:22px;border-radius:8px;
+  background:transparent;
+  box-shadow:none;
+  border:none;
+}
+@media(max-width:700px){
+  .mobile-swipe-hint{display:block}
+  .summary-table-wrap,.table-wrap,.bbs-table-wrap{border-radius:9px}
+  .summary-table-wrap table,.table-wrap table,.bbs-table-wrap table{min-width:900px}
+  .summary-table-wrap th,.summary-table-wrap td,.table-wrap th,.table-wrap td,.bbs-table-wrap th,.bbs-table-wrap td{
+    white-space:nowrap;
+  }
+}
+</style>
+<style id="bbs-abstract-pro-style">
+.abstract-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.abstract-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.abstract-cards>div{border:1px solid var(--line);border-radius:10px;background:var(--panel-alt);padding:10px 12px}
+.abstract-cards span{display:block;font-size:9px;color:var(--muted);letter-spacing:.08em}.abstract-cards b{display:block;margin-top:3px;font-size:16px}
+.abstract-table{width:100%;min-width:1450px;border-collapse:collapse;font-size:10px}.abstract-table th,.abstract-table td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.abstract-table th{font-size:8.5px;color:var(--muted);text-transform:uppercase;text-align:center}.abstract-table th:first-child,.abstract-table td:first-child,.abstract-table th:nth-child(2),.abstract-table td:nth-child(2),.abstract-table th:nth-child(3),.abstract-table td:nth-child(3),.abstract-table th:nth-child(4),.abstract-table td:nth-child(4),.abstract-table th:nth-child(5),.abstract-table td:nth-child(5){text-align:left}.abstract-table tfoot td{font-weight:800;background:var(--panel-alt)}
+.shape-sketch{display:inline-flex;width:42px;height:24px;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:5px;font-weight:800;font-size:9px;background:var(--panel-alt)}
+.shape-code{font-weight:800}.bar-mark{font-weight:900}
+.procurement-table{min-width:850px}
+@media(max-width:700px){.abstract-cards{grid-template-columns:1fr 1fr}.abstract-toolbar button{flex:1}.abstract-table{min-width:1450px}}
+</style><style id="bbs-v7-width">
+.project-bbs-table{min-width:1250px!important}
+.project-table-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+</style><style id="home-bbs-adjust-v9">
+.ref-table{width:100%;overflow-x:auto!important;overflow-y:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+.editable-bbs-table{width:max-content;max-width:none;border-collapse:collapse}
+.editable-bbs-table td{white-space:nowrap;padding:6px 8px}
+.editable-bbs-table th{white-space:normal;padding:6px 8px;max-width:90px;line-height:1.25}
+.bbs-adjust{width:60px;min-width:60px;padding:5px 4px;font-size:13px}
+.editable-bbs-table td:first-child{font-weight:800}
+@media(max-width:700px){
+  .ref-table{border-radius:9px}
+  .bbs-adjust{width:64px;min-width:64px;min-height:38px}
+}
+</style><style id="individual-bbs-options-v10">
+.member-info-card{margin:10px 0 14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-alt)}
+.member-info-title{font-weight:800;font-size:12px;margin-bottom:8px;letter-spacing:.03em}
+.edit-bbs-note{font-size:10px;color:var(--muted);margin-top:7px}
+.edit-bbs-note b{color:var(--text)}
+.edit-bbs-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.edit-bbs-actions button{min-height:38px}
+.edit-bbs-actions .btn-secondary{flex:1;min-width:140px}
+@media(max-width:700px){.member-info-card .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.member-info-card .field:last-child{grid-column:1/-1}.edit-bbs-actions{display:grid;grid-template-columns:1fr}.edit-bbs-actions button{width:100%}}
+</style></head>
+<body>
+
+<header class="top">
+  <button class="hdr-projects-btn" onclick="openProjectsPanel()" title="My Projects">
+    <span class="hpb-ico">📁</span><span>Projects</span><span class="hpb-badge" id="projMemberBadge">0</span>
+  </button>
+  <div class="eyebrow">Site Reference · Reinforcement</div>
+  <h1>Rebar BBS Calculator</h1>
+  <div class="sub">IS 2502 · IS 456:2000 · SP 34(S&T) — verify against structural drawings</div>
+  <div class="sub" style="color:var(--accent);margin-top:4px;">BUILD: 2026-08-31-pro-ui-swipe-pdf-v4</div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="beam">Beam</button>
+  <button data-tab="col">Column</button>
+  <button data-tab="foot">Footing</button>
+  <button data-tab="slab">Slab</button>
+</nav>
+
+<div class="wrap">
+
+  <div class="card">
+    <h2>Project settings</h2>
+    <div class="desc">Shared across all elements below.</div>
+    <div class="row">
+      <div class="field">
+        <label>Concrete grade</label>
+        <select id="concreteGrade">
+          <option value="20">M20</option><option value="25" selected>M25</option>
+          <option value="30">M30</option><option value="35">M35</option><option value="40">M40</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Steel grade</label>
+        <select id="steelGrade">
+          <option value="415">Fe 415</option><option value="500" selected>Fe 500</option>
+          <option value="500">Fe 500D</option><option value="550">Fe 550</option>
+        </select>
+      </div>
+    </div>
+    <details class="adv">
+      <summary>Advanced — stirrup/tie hook &amp; bend allowances</summary>
+      <div class="row">
+        <div class="field"><label>Hook length (×dia, 135°)</label><input type="number" id="hookMult" value="9" step="0.5"></div>
+        <div class="field"><label>Total bend deduction (×dia)</label><input type="number" id="bendMult" value="6" step="0.5"></div>
+      </div>
+      <div class="note" style="padding:0;margin-top:2px;">Common SP 34 site-practice defaults (9d hooks, ~6d deduction for a 4-bend rectangular tie/stirrup). Adjust if your project's BBS standard differs.</div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Development &amp; lap length</h2>
+    <div class="desc">Ld = (φ × 0.87fy) / (4 × τbd), deformed bars — IS 456 Cl. 26.2.1. Used automatically wherever anchorage/lap is needed below.</div>
+    <div class="row">
+      <div class="field">
+        <label>Lap length =</label>
+        <select id="lapMult">
+          <option value="1">1.0 × Ld</option>
+          <option value="1.3" selected>1.3 × Ld</option>
+          <option value="2">2.0 × Ld (all bars at one section)</option>
+        </select>
+      </div>
+    </div>
+    <div class="ref-table">
+      <table id="ldTable"><thead><tr><th>Dia</th><th>τbd</th><th>Ld</th><th>Ld/φ</th><th>Lap</th><th>50φ*</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="note" style="padding:6px 0 0;">*Site thumb-rule (50φ) shown for cross-check only — the code-computed Ld governs.</div>
+  </div>
+
+  <div class="tab-viewport" id="tabViewport">
+    <div class="tab-track" id="tabTrack">
+
+      <!-- BEAM TAB -->
+      <section class="tabpanel active" data-tab="beam" id="beamTab" style="--tone:var(--c-beam)">
+<div class="member-info-card" id="beamMemberInfo">
+  <div class="member-info-title">Beam member / BBS identification</div>
+  <div class="row">
+    <div class="field"><label>Member mark / number</label><input id="beamMemberMark" type="text" value="B1" placeholder="B1"></div>
+    <div class="field"><label>No. of members</label><input id="beamMemberQty" type="number" min="1" value="1"></div>
+    <div class="field"><label>Stirrup / link shape</label><select id="beamStirrupShape"><option>Rectangular closed link</option><option>Rectangular 2-leg</option><option>Rectangular 4-leg</option><option>Cross tie</option></select></div>
+  </div>
+</div>
+
+<div class="card">
+          <h2>Beam &amp; stirrups</h2>
+          <div class="desc">Rectangular 2-legged stirrup, cutting length as per IS 2502 / SP 34.</div>
+          <div class="row">
+            <div class="field"><label>Width b (mm)</label><input type="number" id="beamWidth" value="300"></div>
+            <div class="field"><label>Depth D (mm)</label><input type="number" id="beamDepth" value="450"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="beamCover" value="25"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Clear span (m)</label><input type="number" id="beamSpan" value="4.0" step="0.05"></div>
+            <div class="field"><label>Stirrup type</label><select id="beamStirrupType"><option value="rect2">Rectangular 2-leg</option><option value="rect4">Rectangular 4-leg</option><option value="crosstie">Cross tie</option><option value="closed">Closed link</option></select></div>
+             <div class="field"><label>Stirrup dia</label><select id="beamStirrupDia"><option value="6">6mm</option><option value="8" selected>8mm</option><option value="10">10mm</option><option value="12">12mm</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="beamStirrupSpacing" value="150"></div>
+          </div>
+          <div class="diagram"><svg id="beamSvg" viewBox="0 0 220 220"></svg></div>
+          <div class="outline">
+            <div class="lbl">Stirrup cutting length</div>
+            <div class="val" id="beamStirrupCL">— <small>mm/pc</small></div>
+            <div class="formula" id="beamStirrupFormula"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="field"><label>No. of stirrups</label><div id="beamStirrupCount" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;">—</div></div>
+            <div class="field"><label>Steel (this dia)</label><div id="beamStirrupWeight" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Main bars</h2>
+          <div class="desc">Straight or cranked, with optional anchorage using Ld above.</div>
+          <div class="subhead">Bottom bars</div>
+          <div class="row">
+            <div class="field"><label>Qty</label><input type="number" id="beamBotQty" value="3" min="0"></div>
+            <div class="field"><label>Dia</label><select id="beamBotDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option><option>32</option></select></div>
+            <div class="field"><label>Type</label><select id="beamBotType"><option value="straight">Straight</option><option value="cranked">Cranked</option></select></div>
+            <div class="field" id="beamBotAngleField"><label>Bend angle</label><select id="beamBotAngle"><option value="45">45°</option><option value="30">30°</option></select></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="beamBotAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Bottom bar length (each)</div><div class="val" id="beamBotCL">— <small>mm</small></div><div class="formula" id="beamBotFormula"></div></div>
+
+          <div class="subhead">Top bars</div>
+          <div class="row">
+            <div class="field"><label>Qty</label><input type="number" id="beamTopQty" value="2" min="0"></div>
+            <div class="field"><label>Dia</label><select id="beamTopDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option><option>32</option></select></div>
+            <div class="field"><label>Type</label><select id="beamTopType"><option value="straight" selected>Straight</option><option value="cranked">Cranked</option></select></div>
+            <div class="field" id="beamTopAngleField" style="display:none;"><label>Bend angle</label><select id="beamTopAngle"><option value="45">45°</option><option value="30">30°</option></select></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="beamTopAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Top bar length (each)</div><div class="val" id="beamTopCL">— <small>mm</small></div><div class="formula" id="beamTopFormula"></div></div>
+        </div>
+
+        <div class="card">
+          <h2>Beam BBS summary</h2>
+          <div class="qs-grid" style="margin-bottom:10px;">
+            <div class="qs-card"><span>Bar Dia Used</span><b id="beamGlanceDia">—</b></div>
+            <div class="qs-card"><span>Total Cutting Length</span><b id="beamGlanceCutM">—</b></div>
+            <div class="qs-card"><span>Total Weight</span><b id="beamGlanceWtKg">—</b></div>
+          </div>
+          <div class="ref-table"><table id="beamBbsTable" class="editable-bbs-table">
+<thead><tr>
+<th>Bar Mark</th><th>Shape / Type</th><th>No. Members</th><th>Dia (mm)</th><th>Spacing (mm)</th><th>No. of Bars</th><th>Cutting Length / Bar (mm)</th><th>Length / Bar (m)</th><th>Total Length (m)</th><th>Weight / Bar (kg)</th><th>Total Weight (kg)</th>
+</tr></thead><tbody></tbody><tfoot><tr><td colspan="9">Beam total</td><td>—</td><td class="tot" id="beamGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="beam">⭳ Save Beam PDF</button>
+<div class="edit-bbs-actions" id="beamBbsActions">
+  <button class="btn-secondary" onclick="applyMemberOptions('beam')">Apply member options</button>
+  <button class="btn-secondary" onclick="recalcActiveTab('beam')">Recalculate BBS</button>
+</div>
+<div class="edit-bbs-note"><b>Direct adjustment:</b> use the Dia, Spacing and No. of Bars fields in the table above. Length/bar and weight recalculate from those values.</div>
+        </div>
+      </section>
+
+      <!-- COLUMN TAB -->
+      <section class="tabpanel" data-tab="col" id="colTab" style="--tone:var(--c-col)">
+<div class="member-info-card" id="colMemberInfo">
+  <div class="member-info-title">Column member / BBS identification</div>
+  <div class="row">
+    <div class="field"><label>Member mark / number</label><input id="colMemberMark" type="text" value="C1" placeholder="C1"></div>
+    <div class="field"><label>No. of members</label><input id="colMemberQty" type="number" min="1" value="1"></div>
+    <div class="field"><label>Confinement / tie arrangement</label><select id="colTieArrangement"><option>Closed rectangular tie</option><option>Rectangular tie + cross tie</option><option>Multiple cross ties</option><option>Diamond tie</option></select></div>
+  </div>
+</div>
+
+<div class="card">
+          <h2>Column &amp; ties</h2>
+          <div class="desc">Rectangular lateral tie, cutting length as per IS 2502 / SP 34.</div>
+          <div class="row">
+            <div class="field"><label>Width b (mm)</label><input type="number" id="colWidth" value="300"></div>
+            <div class="field"><label>Depth D (mm)</label><input type="number" id="colDepth" value="300"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="colCover" value="40"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Clear height (m)</label><input type="number" id="colHeight" value="3.0" step="0.05"></div>
+            <div class="field"><label>Tie type</label><select id="colTieType"><option value="rect">Rectangular tie</option><option value="crosstie">Cross tie</option><option value="diamond">Diamond tie</option><option value="closed">Closed tie</option></select></div>
+             <div class="field"><label>Tie dia</label><select id="colTieDia"><option value="6">6mm</option><option value="8" selected>8mm</option><option value="10">10mm</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="colTieSpacing" value="150"></div>
+          </div>
+          <div class="diagram"><svg id="colSvg" viewBox="0 0 220 220"></svg></div>
+          <div class="outline">
+            <div class="lbl">Tie cutting length</div>
+            <div class="val" id="colTieCL">— <small>mm/pc</small></div>
+            <div class="formula" id="colTieFormula"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="field"><label>No. of ties</label><div id="colTieCount" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;">—</div></div>
+            <div class="field"><label>Steel (this dia)</label><div id="colTieWeight" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Longitudinal (main) bars</h2>
+          <div class="desc">Single lift, straight, with optional lap splice for the bar continuing into the storey above.</div>
+          <div class="row">
+            <div class="field"><label>Qty</label><input type="number" id="colMainQty" value="8" min="0"></div>
+            <div class="field"><label>Dia</label><select id="colMainDia"><option>12</option><option selected>16</option><option>20</option><option>25</option><option>32</option></select></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="colSplice" checked><label>Add lap splice length (from table above)</label></div>
+          <div class="outline"><div class="lbl">Main bar length (each)</div><div class="val" id="colMainCL">— <small>mm</small></div><div class="formula" id="colMainFormula"></div></div>
+          <div class="note" style="padding:6px 0 0;">Dowel/anchorage into footing is a separate item — see Footing tab.</div>
+        </div>
+
+        <div class="card">
+          <h2>Column BBS summary</h2>
+          <div class="qs-grid" style="margin-bottom:10px;">
+            <div class="qs-card"><span>Bar Dia Used</span><b id="colGlanceDia">—</b></div>
+            <div class="qs-card"><span>Total Cutting Length</span><b id="colGlanceCutM">—</b></div>
+            <div class="qs-card"><span>Total Weight</span><b id="colGlanceWtKg">—</b></div>
+          </div>
+          <div class="ref-table"><table id="colBbsTable" class="editable-bbs-table">
+<thead><tr>
+<th>Bar Mark</th><th>Shape / Type</th><th>No. Members</th><th>Dia (mm)</th><th>Spacing (mm)</th><th>No. of Bars</th><th>Cutting Length / Bar (mm)</th><th>Length / Bar (m)</th><th>Total Length (m)</th><th>Weight / Bar (kg)</th><th>Total Weight (kg)</th>
+</tr></thead><tbody></tbody><tfoot><tr><td colspan="9">Column total</td><td>—</td><td class="tot" id="colGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="col">⭳ Save Column PDF</button>
+<div class="edit-bbs-actions" id="colBbsActions">
+  <button class="btn-secondary" onclick="applyMemberOptions('col')">Apply member options</button>
+  <button class="btn-secondary" onclick="recalcActiveTab('col')">Recalculate BBS</button>
+</div>
+<div class="edit-bbs-note"><b>Direct adjustment:</b> use the Dia, Spacing and No. of Bars fields in the table above. Length/bar and weight recalculate from those values.</div>
+        </div>
+      </section>
+
+      <!-- FOOTING TAB -->
+      <section class="tabpanel" data-tab="foot" id="footTab" style="--tone:var(--c-foot)">
+<div class="member-info-card" id="footMemberInfo">
+  <div class="member-info-title">Footing member / BBS identification</div>
+  <div class="row">
+    <div class="field"><label>Member mark / number</label><input id="footMemberMark" type="text" value="F1" placeholder="F1"></div>
+    <div class="field"><label>No. of members</label><input id="footMemberQty" type="number" min="1" value="1"></div>
+    <div class="field"><label>Reinforcement layer</label><select id="footLayer"><option>Bottom mat</option><option>Top mat</option><option>Top + bottom mat</option><option>Main + distribution</option></select></div>
+  </div>
+</div>
+
+<div class="card">
+          <h2>Footing — reinforcement</h2>
+           <div class="row"><div class="field"><label>Footing type</label><select id="footType"><option>Isolated footing</option><option>Combined footing</option><option>Strip footing</option><option>Raft footing</option></select></div><div class="field"><label>Bar arrangement</label><select id="footArrangement"><option>Two-way bottom mat</option><option>Bottom main + distribution</option><option>Top &amp; bottom mat</option></select></div></div>
+          <div class="desc">Two-way mat, plan dimensions L × W.</div>
+          <div class="row">
+            <div class="field"><label>Length L (mm)</label><input type="number" id="footLength" value="1800"></div>
+            <div class="field"><label>Width W (mm)</label><input type="number" id="footWidth" value="1800"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="footCover" value="50"></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="footHook" checked><label>Add 90° end hooks (uses hook length above)</label></div>
+          <div class="diagram"><svg id="footSvg" viewBox="0 0 220 220"></svg></div>
+
+          <div class="subhead">Bars running along L (spaced across W)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="footXDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="footXSpacing" value="150"></div>
+          </div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="footXCL">— <small>mm/pc</small></div><div class="formula" id="footXFormula"></div></div>
+
+          <div class="subhead">Bars running along W (spaced across L)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="footYDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="footYSpacing" value="150"></div>
+          </div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="footYCL">— <small>mm/pc</small></div><div class="formula" id="footYFormula"></div></div>
+        </div>
+
+        <div class="card">
+          <h2>Footing BBS summary</h2>
+          <div class="qs-grid" style="margin-bottom:10px;">
+            <div class="qs-card"><span>Bar Dia Used</span><b id="footGlanceDia">—</b></div>
+            <div class="qs-card"><span>Total Cutting Length</span><b id="footGlanceCutM">—</b></div>
+            <div class="qs-card"><span>Total Weight</span><b id="footGlanceWtKg">—</b></div>
+          </div>
+          <div class="ref-table"><table id="footBbsTable" class="editable-bbs-table">
+<thead><tr>
+<th>Bar Mark</th><th>Shape / Type</th><th>No. Members</th><th>Dia (mm)</th><th>Spacing (mm)</th><th>No. of Bars</th><th>Cutting Length / Bar (mm)</th><th>Length / Bar (m)</th><th>Total Length (m)</th><th>Weight / Bar (kg)</th><th>Total Weight (kg)</th>
+</tr></thead><tbody></tbody><tfoot><tr><td colspan="9">Footing total</td><td>—</td><td class="tot" id="footGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="foot">⭳ Save Footing PDF</button>
+<div class="edit-bbs-actions" id="footBbsActions">
+  <button class="btn-secondary" onclick="applyMemberOptions('foot')">Apply member options</button>
+  <button class="btn-secondary" onclick="recalcActiveTab('foot')">Recalculate BBS</button>
+</div>
+<div class="edit-bbs-note"><b>Direct adjustment:</b> use the Dia, Spacing and No. of Bars fields in the table above. Length/bar and weight recalculate from those values.</div>
+        </div>
+      </section>
+
+      <!-- SLAB TAB -->
+      <section class="tabpanel" data-tab="slab" id="slabTab" style="--tone:var(--c-slab)">
+<div class="member-info-card" id="slabMemberInfo">
+  <div class="member-info-title">Slab member / BBS identification</div>
+  <div class="row">
+    <div class="field"><label>Member mark / number</label><input id="slabMemberMark" type="text" value="S1" placeholder="S1"></div>
+    <div class="field"><label>No. of members / panels</label><input id="slabMemberQty" type="number" min="1" value="1"></div>
+    <div class="field"><label>Bar arrangement</label><select id="slabBarArrangement"><option>Main + distribution</option><option>Two-way bottom</option><option>Top negative + bottom</option><option>Top + bottom both ways</option></select></div>
+  </div>
+</div>
+
+<div class="card">
+          <h2>Slab — reinforcement</h2>
+           <div class="row"><div class="field"><label>Slab type</label><select id="slabType"><option>One-way slab</option><option>Two-way slab</option><option>Flat slab</option><option>Continuous slab</option></select></div><div class="field"><label>Steel layer</label><select id="slabLayer"><option>Bottom main + distribution</option><option>Top negative + bottom main</option><option>Top &amp; bottom both ways</option></select></div></div>
+          <div class="desc">One panel, clear spans Lx (shorter) × Ly (longer). Top/negative steel at supports is moment-dependent — take from design drawings.</div>
+          <div class="row">
+            <div class="field"><label>Lx, shorter (m)</label><input type="number" id="slabLx" value="3.5" step="0.05"></div>
+            <div class="field"><label>Ly, longer (m)</label><input type="number" id="slabLy" value="4.5" step="0.05"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="slabCover" value="20"></div>
+          </div>
+          <div class="diagram"><svg id="slabSvg" viewBox="0 0 220 220"></svg></div>
+
+          <div class="subhead">Main bars (span Lx, along shorter direction)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="slabMainDia"><option selected>8</option><option>10</option><option>12</option><option>16</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="slabMainSpacing" value="150"></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="slabMainAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="slabMainCL">— <small>mm/pc</small></div><div class="formula" id="slabMainFormula"></div></div>
+
+          <div class="subhead">Distribution bars (span Ly, perpendicular)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="slabDistDia"><option selected>8</option><option>10</option><option>12</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="slabDistSpacing" value="200"></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="slabDistAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="slabDistCL">— <small>mm/pc</small></div><div class="formula" id="slabDistFormula"></div></div>
+        </div>
+
+        <div class="card">
+          <h2>Slab BBS summary</h2>
+          <div class="qs-grid" style="margin-bottom:10px;">
+            <div class="qs-card"><span>Bar Dia Used</span><b id="slabGlanceDia">—</b></div>
+            <div class="qs-card"><span>Total Cutting Length</span><b id="slabGlanceCutM">—</b></div>
+            <div class="qs-card"><span>Total Weight</span><b id="slabGlanceWtKg">—</b></div>
+          </div>
+          <div class="ref-table"><table id="slabBbsTable" class="editable-bbs-table">
+<thead><tr>
+<th>Bar Mark</th><th>Shape / Type</th><th>No. Members</th><th>Dia (mm)</th><th>Spacing (mm)</th><th>No. of Bars</th><th>Cutting Length / Bar (mm)</th><th>Length / Bar (m)</th><th>Total Length (m)</th><th>Weight / Bar (kg)</th><th>Total Weight (kg)</th>
+</tr></thead><tbody></tbody><tfoot><tr><td colspan="9">Slab total</td><td>—</td><td class="tot" id="slabGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="slab">⭳ Save Slab PDF</button>
+<div class="edit-bbs-actions" id="slabBbsActions">
+  <button class="btn-secondary" onclick="applyMemberOptions('slab')">Apply member options</button>
+  <button class="btn-secondary" onclick="recalcActiveTab('slab')">Recalculate BBS</button>
+</div>
+<div class="edit-bbs-note"><b>Direct adjustment:</b> use the Dia, Spacing and No. of Bars fields in the table above. Length/bar and weight recalculate from those values.</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="note">
+    Formulas follow common IS 2502 / IS 456:2000 / SP 34(S&amp;T):1987 site practice. Hook/bend constants and lap category vary slightly between consultants — adjust the Advanced settings and Lap multiplier to match your project's approved BBS standard. Always cross-check final cutting lengths against structural drawings before cutting steel.
+  </div>
+</div>
+
+<!-- CREATE PROJECT MODAL (always shown on launch, so you pick or start fresh every time) -->
+<div class="modal-overlay hidden" id="createProjectModal">
+  <div class="modal-sheet">
+    <h2>Select / Create Project</h2>
+    <div class="desc">Give this job a name before you start calculating — everything you save will be filed under it.</div>
+
+    <div class="field" id="initialProjectSelectWrap" style="display:none;margin-bottom:16px;">
+      <label>Open an existing project</label>
+      <select id="initialProjectSelect"></select>
+      <button type="button" class="btn-secondary" id="openExistingProjectBtn" style="display:none;margin-top:8px;width:100%;">Open Existing Project</button>
+      <div class="desc" style="margin:12px 0 0;">— or create a new one below —</div>
+    </div>
+
+    <div class="field" style="margin-bottom:10px;">
+      <label>Project / Building name</label>
+      <input type="text" id="newProjName" placeholder="Enter project / building name" autocomplete="off" autocapitalize="words" spellcheck="false">
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Site / location *</label>
+      <input type="text" id="newProjLocation" placeholder="Enter site / location" autocomplete="off" autocapitalize="words" spellcheck="false">
+    </div>
+    <button class="btn-primary" onclick="createProject()">Create Project</button>
+  </div>
+</div>
+
+<!-- PROJECTS PANEL -->
+<div class="modal-overlay hidden" id="projectsPanel">
+  <div class="modal-sheet project-panel-pro project-workspace">
+    <button class="modal-close" onclick="closeProjectsPanel()">×</button>
+    <div class="pw-head">
+      <div><div class="eyebrow">PROJECT</div><h2 id="projectPanelName">Project</h2><div id="projectPanelLocation" class="pw-location">Location</div></div>
+      <button class="btn-primary pw-pdf" onclick="generateProjectSummaryPDF()">⭳ Save PDF</button>
+    </div>
+    <div class="pw-meta">
+      <div><span>MEMBER TYPES</span><b id="projectMemberTypes">0</b></div>
+      <div><span>TOTAL MEMBERS</span><b id="projectMemberCount">0</b></div>
+      <div><span>TOTAL STEEL</span><b id="projectSummaryTotal">0.0 kg</b></div>
+    </div>
+    <div class="project-toolbar">
+      <div class="field"><label>Active project</label><select id="projSwitcher" onchange="switchProject(this.value)"></select></div>
+      <div class="field"><label>Sort projects</label><select id="projectSort" onchange="renderProjectPanel()"><option value="updated">Recently updated</option><option value="created">Recently created</option><option value="nameAsc">Name A–Z</option><option value="nameDesc">Name Z–A</option></select></div>
+      <button class="btn-secondary project-new-btn" onclick="showCreateProjectModal(false)">+ New Project</button>
+    </div>
+    <div class="pw-tabs" role="tablist">
+      <button class="pw-tab active" onclick="showProjectTab('bbs')">BBS</button>
+      <button class="pw-tab" onclick="showProjectTab('members')">Members</button>
+      <button class="pw-tab" onclick="showProjectTab('abstract')">BBS Abstract</button>
+      <button class="pw-tab" onclick="showProjectTab('qs')">QS Summary</button>
+      <button class="pw-tab" onclick="showProjectTab('settings')">Project</button>
+    </div>
+    <section id="projectBbsView" class="pw-view">
+      <div class="project-table-wrap"><table class="project-bbs-table">
+        <thead><tr><th>Member Type</th><th>Member</th><th>No. of Members</th><th>Dia (mm)</th><th>Spacing (mm)</th><th>No. of Bars</th><th>Cutting Length / Bar (mm)</th><th>Length / Bar (m)</th><th>Total Cutting Length (m)</th><th>Weight / Bar (kg)</th><th>Total Weight (kg)</th></tr></thead>
+        <tbody id="projectBbsBody"></tbody><tfoot id="projectBbsFoot"></tfoot>
+      </table></div>
+      <div class="pw-note">Different bar diameters are shown as separate rows under the same member. Values recalculate from the active member data.</div>
+    </section>
+    <section id="projectMembersView" class="pw-view hidden">
+      <div class="member-form"><div class="row">
+        <div class="field"><label>Member name/no.</label><input type="text" id="memberName" placeholder="e.g. B1, C1, F1"></div>
+        <div class="field"><label>No. of members</label><input type="number" id="memberQty" value="1" min="1"></div>
+      </div>
+      <button class="btn-primary" onclick="saveMember()">Save current tab as member</button></div>
+      <div id="memberListWrap"></div>
+    </section>
+    <section id="projectAbstractView" class="pw-view hidden">
+      <div class="abstract-toolbar">
+        <button class="btn-secondary" onclick="renumberBarMarks()">Renumber bar marks</button>
+        <button class="btn-secondary" onclick="rebuildProcurementPlan()">Rebuild cutting plan</button>
+        <button class="btn-primary" onclick="generateProjectSummaryPDF()">Save complete BBS PDF</button>
+      </div>
+      <div class="abstract-cards">
+        <div><span>BBS ITEMS</span><b id="absItemCount">0</b></div>
+        <div><span>THEORETICAL STEEL</span><b id="absTheory">0.00 kg</b></div>
+        <div><span>PROCUREMENT STEEL</span><b id="absProcurement">0.00 kg</b></div>
+        <div><span>EST. SCRAP</span><b id="absScrap">0.00 kg</b></div>
+      </div>
+      <div class="qs-section">
+        <h3>Bar Bending Schedule — Abstract</h3>
+        <div class="project-table-wrap"><table class="abstract-table">
+          <thead><tr>
+            <th>Bar Mark</th><th>Shape Code</th><th>Sketch / Reference</th><th>Member Type</th><th>Member</th>
+            <th>No. Members</th><th>Dia (mm)</th><th>Spacing (mm)</th><th>No. Bars</th>
+            <th>Cutting Length / Bar (mm)</th><th>Total Cut Length (m)</th><th>Total Weight (kg)</th>
+          </tr></thead>
+          <tbody id="abstractBody"></tbody><tfoot id="abstractFoot"></tfoot>
+        </table></div>
+      </div>
+      <div class="qs-section">
+        <h3>Diameter-wise Steel Abstract</h3>
+        <div class="project-table-wrap"><table class="qs-table">
+          <thead><tr><th>Dia (mm)</th><th>Total Cut Length (m)</th><th>Theoretical Weight (kg)</th><th>Wastage / Scrap (kg)</th><th>Procurement Weight (kg)</th></tr></thead>
+          <tbody id="absDiaBody"></tbody><tfoot id="absDiaFoot"></tfoot>
+        </table></div>
+      </div>
+      <div class="qs-section">
+        <h3>Lap / Wastage Reconciliation</h3>
+        <div class="project-table-wrap"><table class="qs-table">
+          <thead><tr><th>Dia</th><th>Configured Lap Basis</th><th>Recorded Lap Length / Bar</th><th>Cut Length Basis</th><th>Reconciliation Status</th></tr></thead>
+          <tbody id="lapReconBody"></tbody>
+        </table></div>
+        <div class="pw-note">Lap quantities are not invented. The schedule reports the configured project lap basis and flags rows where the cutting length must be checked against the approved structural drawing/BBS.</div>
+      </div>
+      <div class="qs-section">
+        <h3>Stock-Length Cutting Plan</h3>
+        <div class="project-table-wrap"><table class="qs-table">
+          <thead><tr><th>Dia</th><th>Stock Bar No.</th><th>Cut Pieces (mm)</th><th>Used (m)</th><th>Scrap (m)</th><th>Utilisation</th></tr></thead>
+          <tbody id="cutPlanBody"></tbody><tfoot id="cutPlanFoot"></tfoot>
+        </table></div>
+        <div class="pw-note">Uses a greedy first-fit cutting plan by diameter. It is a procurement planning aid, not a fabrication/shop-drawing approval.</div>
+      </div>
+      <div class="qs-section">
+        <h3>Material Procurement Schedule</h3>
+        <div class="project-table-wrap"><table class="qs-table procurement-table">
+          <thead><tr><th>Material</th><th>Dia</th><th>Stock Length</th><th>Required Stock Bars</th><th>Procurement Length (m)</th><th>Procurement Weight (kg)</th><th>Estimated Scrap (kg)</th></tr></thead>
+          <tbody id="procBody"></tbody><tfoot id="procFoot"></tfoot>
+        </table></div>
+      </div>
+      <div class="pw-reference-box">
+        <b>Professional QS control</b>
+        <div>Bar marks are unique within the project. Shape codes are descriptive references; the approved structural drawing and bar shape/detail govern fabrication.</div>
+        <div>Procurement quantity is based on the selected stock length and the generated cutting plan. It must be reconciled with supplier stock lengths, couplers/laps, site wastage and the approved BBS before purchase.</div>
+      </div>
+    </section>
+<section id="projectQsView" class="pw-view hidden">
+      <div class="qs-grid">
+        <div class="qs-card"><span>Total theoretical steel</span><b id="qsTheoryWeight">0.00 kg</b></div>
+        <div class="qs-card"><span>Wastage allowance</span><b id="qsWastageWeight">0.00 kg</b></div>
+        <div class="qs-card"><span>Procurement quantity</span><b id="qsProcurementWeight">0.00 kg</b></div>
+        <div class="qs-card"><span>Total cut length</span><b id="qsCutLength">0.00 m</b></div>
+        <div class="qs-card"><span>Total bar pieces</span><b id="qsBarPieces">0</b></div>
+        <div class="qs-card"><span>Estimated steel amount</span><b id="qsSteelAmount">—</b></div>
+      </div>
+      <div class="qs-controls">
+        <div class="field"><label>Stock bar length (m)</label><input id="qsStockLength" type="number" min="1" step="0.01" value="12"></div>
+        <div class="field"><label>Wastage allowance (%)</label><input id="qsWastagePct" type="number" min="0" max="20" step="0.1" value="0"></div>
+        <div class="field"><label>Steel rate (₹/kg) — optional</label><input id="qsSteelRate" type="number" min="0" step="0.01" placeholder="Optional"></div>
+        <button class="btn-primary" onclick="saveQsSettings()">Update QS Summary</button>
+      </div>
+      <div class="qs-section">
+        <h3>Diameter-wise procurement abstract</h3>
+        <div class="project-table-wrap"><table class="qs-table">
+          <thead><tr><th>Dia (mm)</th><th>Total cut length (m)</th><th>Theoretical weight (kg)</th><th>12 m stock bars*</th><th>Procurement weight (kg)</th></tr></thead>
+          <tbody id="qsDiameterBody"></tbody>
+          <tfoot id="qsDiameterFoot"></tfoot>
+        </table></div>
+        <div class="pw-note">*Stock-bar count is a procurement planning indicator, not a cutting-optimization result. Actual cutting patterns should be finalized from the approved BBS/shop drawing.</div>
+      </div>
+      <div class="qs-section">
+        <h3>Quantity-surveyor checks</h3>
+        <div id="qsChecks" class="qs-checks"></div>
+      </div>
+      <div class="pw-reference-box">
+        <b>Code basis used by this BBS workflow</b>
+        <div>IS 2502 — bending and fixing of reinforcement bars. <a href="https://services.bis.gov.in/tmp/SR2502.pdf" target="_blank" rel="noopener">BIS reference</a></div>
+        <div>SP 34 — concrete reinforcement detailing and preparation of bar bending schedules. <a href="https://www.services.bis.gov.in/tmp/SRSP34.pdf" target="_blank" rel="noopener">BIS reference</a></div>
+        <div>IS 456 — plain and reinforced concrete; detailing inputs such as cover/development/lap are project/design dependent.</div>
+        <div>IS 1786 — high-strength deformed steel bars and wires for concrete reinforcement.</div>
+        <div class="qs-warning">The app does not invent structural design values. Development length, lap length, cover and anchorage must follow the approved structural design/drawings and applicable standard provisions.</div>
+      </div>
+    </section>
+<section id="projectSettingsView" class="pw-view hidden">
+      <div class="member-form">
+        <div class="row">
+          <div class="field"><label>Project / Building</label><input id="settingsProjectNameInput" type="text"></div>
+          <div class="field"><label>Site / Location *</label><input id="settingsProjectLocationInput" type="text"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Client</label><input id="settingsClient" type="text" placeholder="Client name"></div>
+          <div class="field"><label>Consultant</label><input id="settingsConsultant" type="text" placeholder="Consultant name"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Drawing No.</label><input id="settingsDrawingNo" type="text" placeholder="Drawing number"></div>
+          <div class="field"><label>BBS Revision No.</label><input id="settingsRevision" type="text" placeholder="Revision"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Concrete Grade</label><select id="settingsConcrete"><option>M20</option><option>M25</option><option>M30</option><option>M35</option><option>M40</option></select></div>
+          <div class="field"><label>Steel Grade</label><select id="settingsSteel"><option>Fe-415</option><option selected>Fe-500</option><option>Fe-500D</option><option>Fe-550</option></select></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Lap Length</label><select id="settingsLap"><option>50D</option><option>1.0 × Ld</option><option>1.3 × Ld</option><option>2.0 × Ld</option></select></div>
+          <div class="field"><label>Hook Length</label><select id="settingsHook"><option>10D</option><option>75 mm minimum</option><option>Project-specific</option></select></div>
+        </div>
+        <button class="btn-primary" onclick="saveProjectSettings()">Save Project Details</button>
+      </div>
+      <div class="pw-reference-box">
+        <b>BBS reference conventions</b>
+        <div>45° bend: 1D · 90° bend: 2D · 135° bend: 3D · 180° bend: 4D · Hook: 10D</div>
+        <div>These labels follow the supplied workbook's BBS reference section.</div>
+      </div>
+      <button class="btn-secondary" onclick="showCreateProjectModal(false)" style="width:100%;">+ Create New Project</button>
+    </section>
+    <div class="project-actions">
+      <button class="btn-secondary" onclick="shareBackupToDrive()">⭱ Share / Save to Drive</button>
+      <button class="btn-secondary" onclick="exportBackup()">Backup all (.json)</button>
+      <button class="btn-danger" onclick="deleteCurrentProject()">Delete project</button>
+    </div>
+    <div class="pw-note" style="padding-top:2px;">Tip: tap <b>Share / Save to Drive</b> after important edits — pick Google Drive (or any cloud app) from the share sheet so your project data survives an app reinstall or a cleared phone.</div>
+  </div>
+</div>
+
+<style id="project-workspace-final">
+.project-workspace{max-width:1100px!important;width:96vw!important;max-height:92vh;overflow:auto}
+.pw-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.pw-head h2{margin:2px 0 3px}.pw-location{color:var(--muted);font-size:13px}.pw-pdf{width:auto!important;min-width:110px}
+.pw-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 0}.pw-meta>div{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-alt)}.pw-meta span{display:block;font-size:9px;color:var(--muted);letter-spacing:.08em}.pw-meta b{display:block;margin-top:3px;font-size:17px}
+.project-toolbar{display:grid!important;grid-template-columns:1.5fr 1fr auto!important}.pw-tabs{display:flex;border-bottom:1px solid var(--line);margin:4px 0 14px}.pw-tab{border:0;background:transparent;color:var(--muted);padding:11px 18px;font-weight:800;border-bottom:2px solid transparent}.pw-tab.active{color:var(--text);border-bottom-color:var(--accent)}.pw-view.hidden{display:none}
+.project-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}.project-bbs-table{width:100%;min-width:1050px;border-collapse:collapse;font-size:11px}.project-bbs-table th,.project-bbs-table td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.project-bbs-table th{text-align:center;color:var(--muted);font-size:9px;text-transform:uppercase}.project-bbs-table th:first-child,.project-bbs-table td:first-child,.project-bbs-table th:nth-child(2),.project-bbs-table td:nth-child(2){text-align:left}.project-bbs-table tfoot td{font-weight:800;background:var(--panel-alt)}.pw-edit{width:68px;padding:6px!important;text-align:right}.pw-note{font-size:11px;color:var(--muted);padding:8px 2px}.pw-setting-row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+@media(max-width:700px){.project-workspace{width:100vw!important}.pw-meta{grid-template-columns:1fr}.project-toolbar{grid-template-columns:1fr 1fr!important}.project-new-btn{grid-column:1/-1;width:100%}.pw-head{align-items:center}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const tauPlain = {20:1.2, 25:1.4, 30:1.5, 35:1.7, 40:1.9};
+const deformedFactor = 1.6;
+const commonDias = [8,10,12,16,20,25,32];
+const elementTotals = {beam:0, col:0, foot:0, slab:0};
+const elementRows = {beam:[], col:[], foot:[], slab:[]};
+const TAB_ORDER = ['beam','col','foot','slab'];
+const TAB_COLORS = {beam:[255,122,41], col:[95,168,211], foot:[111,207,151], slab:[199,146,234]};
+
+function ldFor(dia, concreteGrade, steelGrade){
+  const tauD = tauPlain[concreteGrade] * deformedFactor;
+  const sigmaS = 0.87 * steelGrade;
+  return {ld: (dia * sigmaS) / (4 * tauD), tauD};
+}
+function unitWeight(dia){ return (dia*dia)/162; }
+function fmt(n, d=0){ return isFinite(n) ? n.toLocaleString('en-IN', {maximumFractionDigits:d, minimumFractionDigits:d}) : '—'; }
+function tabLabel(key){ return {beam:'Beam', col:'Column', foot:'Footing', slab:'Slab'}[key] || key; }
+function tabHex(key){ return {beam:'#FF7A29', col:'#5FA8D3', foot:'#6FCF97', slab:'#C792EA'}[key] || '#8B93A0'; }
+
+function drawSection(svgId, b, D, cover, barDia, tone){
+  tone = tone || '#FF7A29';
+  const svg = $(svgId);
+  const maxW = 170, maxH = 170;
+  const scale = Math.min(maxW/b, maxH/D);
+  const w = b*scale, h = D*scale;
+  const x0 = (220-w)/2, y0 = (220-h)/2;
+  const c = cover*scale;
+  const r = Math.max(3, (barDia*scale)/2*1.7);
+  svg.innerHTML = `
+    <rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="none" stroke="#333941" stroke-width="1.5"/>
+    <rect x="${x0+c}" y="${y0+c}" width="${w-2*c}" height="${h-2*c}" fill="none" stroke="${tone}" stroke-width="2" rx="3"/>
+    <circle cx="${x0+c+r+1}" cy="${y0+c+r+1}" r="${r}" fill="#5FA8D3"/>
+    <circle cx="${x0+w-c-r-1}" cy="${y0+c+r+1}" r="${r}" fill="#5FA8D3"/>
+    <circle cx="${x0+c+r+1}" cy="${y0+h-c-r-1}" r="${r}" fill="#6FCF97"/>
+    <circle cx="${x0+w-c-r-1}" cy="${y0+h-c-r-1}" r="${r}" fill="#6FCF97"/>
+    <text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle">${b} mm</text>
+    <text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${D} mm</text>
+  `;
+}
+
+function drawPlan(svgId, L, W, nX, nY){
+  const svg = $(svgId);
+  const maxW = 170, maxH = 170;
+  const scale = Math.min(maxW/L, maxH/W);
+  const w = L*scale, h = W*scale;
+  const x0 = (220-w)/2, y0 = (220-h)/2;
+  nX = Math.max(2, Math.min(nX, 9));
+  nY = Math.max(2, Math.min(nY, 9));
+  let lines = `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="none" stroke="#333941" stroke-width="1.5"/>`;
+  for(let i=0;i<nY;i++){
+    const y = y0 + (h/(nY-1||1))*i;
+    lines += `<line x1="${x0}" y1="${y}" x2="${x0+w}" y2="${y}" stroke="#5FA8D3" stroke-width="1.2" opacity="0.75"/>`;
+  }
+  for(let i=0;i<nX;i++){
+    const x = x0 + (w/(nX-1||1))*i;
+    lines += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y0+h}" stroke="#6FCF97" stroke-width="1.2" opacity="0.75"/>`;
+  }
+  lines += `<text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle">${L} mm</text>`;
+  lines += `<text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${W} mm</text>`;
+  svg.innerHTML = lines;
+}
+
+function renderBbs(tableId,totalId,rows,key){
+  if(key) elementRows[key]=rows;
+  const table=$(tableId),tbody=table.querySelector('tbody'); if(!tbody)return;
+  tbody.innerHTML='';
+  let grand=0, totalCutM=0; const diaSet=new Set();
+  rows.forEach((r,i)=>{
+    const dia=Number(r.dia||0), baseQty=Math.max(0,Number(r.qty||r.count||0)), memberQty=Math.max(1,Number($(key+'MemberQty')?.value)||1), qty=baseQty*memberQty, cut=Number(r.length||r.cuttingLength||0);
+    const totalM=qty*cut/1000, perBarM=cut/1000, perBarKg=perBarM*unitWeight(dia), totalKg=totalM*unitWeight(dia);
+    r.qty=qty; r.totalM=totalM; r.wt=totalKg; grand+=totalKg; totalCutM+=totalM;
+    if(dia)diaSet.add(dia);
+    const tr=document.createElement('tr');
+    const mark=(r.mark||((key==='beam'?'B':key==='col'?'C':key==='foot'?'F':'S')+'-'+String(i+1).padStart(3,'0')));
+    tr.innerHTML=`
+      <td><b>${mark}</b></td>
+      <td>${r.shape||r.type||'—'}</td>
+      <td>${r.members||1}</td>
+      <td><input class="bbs-adjust" type="number" min="0" step="1" value="${dia||''}" aria-label="Diameter" onchange="adjustHomeBbs('${key}',${i},'dia',this.value)"></td>
+      <td><input class="bbs-adjust" type="number" min="0" step="1" value="${r.spacing||''}" aria-label="Spacing" onchange="adjustHomeBbs('${key}',${i},'spacing',this.value)"></td>
+      <td><input class="bbs-adjust" type="number" min="0" step="1" value="${qty||''}" aria-label="Number of bars" onchange="adjustHomeBbs('${key}',${i},'qty',this.value)"></td>
+      <td>${fmt(cut,0)}</td>
+      <td>${fmt(perBarM,3)}</td>
+      <td>${fmt(totalM,2)}</td>
+      <td>${fmt(perBarKg,3)}</td>
+      <td class="tot">${fmt(totalKg,2)}</td>`;
+    tbody.appendChild(tr);
+  });
+  $(totalId).textContent=rows.length?fmt(grand,2)+' kg':'—';
+  elementTotals[key]=grand;
+  if(key){
+    const glanceDia=$(key+'GlanceDia'), glanceCutM=$(key+'GlanceCutM'), glanceWt=$(key+'GlanceWtKg');
+    const diaList=[...diaSet].sort((a,b)=>a-b);
+    if(glanceDia)glanceDia.textContent=diaList.length?diaList.map(d=>'⌀'+d).join(', ')+' mm':'—';
+    if(glanceCutM)glanceCutM.textContent=rows.length?fmt(totalCutM,2)+' m':'—';
+    if(glanceWt)glanceWt.textContent=rows.length?fmt(grand,2)+' kg':'—';
+  }
+  return grand;
+}
+function adjustHomeBbs(key,index,field,value){
+  const rows=elementRows[key]||[],r=rows[index];if(!r)return;
+  const n=Math.max(0,Number(value)||0);
+  if(field==='dia')r.dia=n;
+  if(field==='spacing')r.spacing=n;
+  if(field==='qty'){r.qty=Math.floor(n);r.count=Math.floor(n);r.noOfBars=Math.floor(n);}
+  const cut=Number(r.length||r.cuttingLength||0),dia=Number(r.dia||0),qty=Number(r.qty||0);
+  r.totalM=cut*qty/1000;r.wt=r.totalM*unitWeight(dia);
+  renderBbs(key+'BbsTable',key+'GrandTotal',rows,key);
+  queueProjectSave();
+}
+
+function buildReportText(){
+  const labels = {beam:'BEAM', col:'COLUMN', foot:'FOOTING', slab:'SLAB'};
+  let out = 'REBAR BBS — ' + new Date().toLocaleDateString('en-IN') + '\n';
+  out += 'IS 2502 / IS 456:2000 / SP 34(S&T)\n';
+  out += '='.repeat(40) + '\n';
+  let grand = 0;
+  TAB_ORDER.forEach(key=>{
+    const rows = elementRows[key];
+    if(!rows || !rows.length) return;
+    out += '\n' + labels[key] + '\n' + '-'.repeat(40) + '\n';
+    rows.forEach((r,i)=>{
+      out += `${i+1}. ${r.shape||r.mark} | ${r.dia}mm | Qty:${r.qty}`;
+      if(r.spacing) out += ` | @${r.spacing}mm c/c`;
+      out += ` | ${fmt(r.length)}mm x${r.qty} = ${fmt(r.totalM,1)}m | ${fmt(r.wt,1)}kg\n`;
+    });
+    out += `${labels[key]} TOTAL: ${fmt(elementTotals[key],1)} kg\n`;
+    grand += elementTotals[key];
+  });
+  out += '\n' + '='.repeat(40) + '\n';
+  out += `GRAND TOTAL, ALL ELEMENTS: ${fmt(grand,1)} kg\n`;
+  return out;
+}
+
+function buildElementReportText(key){
+  const labels = {beam:'BEAM', col:'COLUMN', foot:'FOOTING', slab:'SLAB'};
+  const rows = elementRows[key] || [];
+  let out = `${labels[key]} — REBAR BBS — ` + new Date().toLocaleDateString('en-IN') + '\n' + '='.repeat(40) + '\n';
+  rows.forEach((r,i)=>{
+    out += `${i+1}. ${r.shape||r.mark} | ${r.dia}mm | Qty:${r.qty}`;
+    if(r.spacing) out += ` | @${r.spacing}mm c/c`;
+    out += ` | ${fmt(r.length)}mm x${r.qty} = ${fmt(r.totalM,1)}m | ${fmt(r.wt,1)}kg\n`;
+  });
+  out += '='.repeat(40) + `\n${labels[key]} TOTAL: ${fmt(elementTotals[key],1)} kg\n`;
+  return out;
+}
+
+function buildProjectSummaryText(){
+  const p=getCurrentProject();if(!p)return '';
+  const rows=projectAbstractRows(p),stock=Math.max(.1,Number(p.qsStockLength||12)),plans=buildCuttingPlan(rows,stock);
+  let out=`PROJECT: ${p.name||''}\nLOCATION: ${p.location||''}\nCLIENT: ${p.client||''}\nCONSULTANT: ${p.consultant||''}\nDRAWING NO.: ${p.drawingNo||''}\nBBS REVISION: ${p.revision||''}\nGRADE OF CONCRETE: ${p.concrete||''}\nGRADE OF STEEL: ${p.steel||''}\nLAP LENGTH: ${p.lap||''}\nHOOK LENGTH: ${p.hook||''}\nSTOCK LENGTH: ${stock} m\n`;
+  out+='45 BENT-1D | 90 BENT-2D | 135 BENT-3D | 180 BENT-4D | HOOK-10D\n'+'='.repeat(90)+'\nBBS ABSTRACT\n';
+  rows.forEach(r=>out+=`${r.mark} | ${r.code} | ${r.type} | ${r.member} | Qty ${r.qty} | Dia ${r.dia} | Sp ${r.spacing||'—'} | Bars ${r.count} | CL/bar ${fmt(r.cut,0)} mm | Total CL ${fmt(r.totalM,2)} m | ${fmt(r.wt,2)} kg\n`);
+  const theory=rows.reduce((s,r)=>s+r.wt,0),proc=plans.reduce((s,x)=>s+x.dia*x.dia/162*x.used,0);
+  out+=`\\nTHEORETICAL STEEL: ${fmt(theory,2)} kg\n`;
+  out+=`CUTTING PLAN STOCK BARS: ${plans.length}\n`;
+  out+=`PROCUREMENT WEIGHT: ${fmt(plans.reduce((s,x)=>s+x.used*unitWeight(x.dia)+x.scrap*unitWeight(x.dia),0),2)} kg\n`;
+  out+='\\nMATERIAL PROCUREMENT SCHEDULE\\n';
+  const by=new Map();plans.forEach(x=>by.set(x.dia,(by.get(x.dia)||0)+1));
+  [...by.entries()].sort((a,b)=>a[0]-b[0]).forEach(([d,b])=>out+=`Fe-${p.steel||'500'} | Dia ${d} mm | ${b} stock bars × ${stock} m | ${fmt(b*stock*unitWeight(d),2)} kg\n`);
+  return out;
+}
+function updateStickyBar(){
+  const g = elementTotals.beam+elementTotals.col+elementTotals.foot+elementTotals.slab;
+  const bar = $('grandWeightBar');
+  if(bar) bar.textContent = fmt(g,1)+' kg';
+}
+
+let ldMap = {};
+
+function recalcGlobal(){
+  const concreteGrade = parseInt($('concreteGrade').value);
+  const steelGrade = parseFloat($('steelGrade').value);
+  const lapMult = parseFloat($('lapMult').value);
+  const tbody = $('ldTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  ldMap = {};
+  commonDias.forEach(dia=>{
+    const {ld, tauD} = ldFor(dia, concreteGrade, steelGrade);
+    ldMap[dia] = ld;
+    const lap = ld*lapMult;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${dia}</td><td>${tauD.toFixed(2)}</td><td>${fmt(ld)}</td><td>${fmt(ld/dia,1)}φ</td><td>${fmt(lap)}</td><td>${50*dia}</td>`;
+    tbody.appendChild(tr);
+  });
+  return {concreteGrade, steelGrade, lapMult};
+}
+
+function recalcBeam(hookMult, bendMult){
+  const b = parseFloat($('beamWidth').value)||0, D = parseFloat($('beamDepth').value)||0;
+  const cover = parseFloat($('beamCover').value)||0;
+  const spanM = parseFloat($('beamSpan').value)||0;
+  const stDia = parseFloat($('beamStirrupDia').value);
+  const spacing = parseFloat($('beamStirrupSpacing').value)||150;
+  const botDia = parseFloat($('beamBotDia').value);
+  drawSection('beamSvg', b, D, cover, botDia, tabHex('beam'));
+
+  const A = b-2*cover, B = D-2*cover;
+  const hookLen = hookMult*stDia, deduction = bendMult*stDia;
+  const stirrupCL = 2*(A+B) + 2*hookLen - deduction;
+  $('beamStirrupCL').innerHTML = `${fmt(stirrupCL)} <small>mm/pc</small>`;
+  $('beamStirrupFormula').textContent = `2×(${fmt(A)}+${fmt(B)}) + 2×(${hookMult}×${stDia}) − ${bendMult}×${stDia}`;
+  const nStirrups = Math.ceil((spanM*1000)/spacing)+1;
+  $('beamStirrupCount').textContent = nStirrups;
+  const stirrupTotalM = (stirrupCL*nStirrups)/1000;
+  const stirrupWt = stirrupTotalM*unitWeight(stDia);
+  $('beamStirrupWeight').textContent = fmt(stirrupWt,1)+' kg';
+
+  function mainBar(prefix){
+    const qty = parseFloat($(prefix+'Qty').value)||0;
+    const dia = parseFloat($(prefix+'Dia').value);
+    const type = $(prefix+'Type').value;
+    const anchorOn = $(prefix+'Anchor').checked;
+    const ld = ldMap[dia] || 0;
+    const anchor = anchorOn ? ld : 0;
+    let length = spanM*1000 + 2*anchor;
+    let formula = `${fmt(spanM*1000)} + 2×${anchorOn?fmt(ld)+' (Ld)':'0'}`;
+    if(type==='cranked'){
+      const angle = parseFloat($(prefix+'Angle').value);
+      const rise = Math.max(D-2*cover-dia, 0);
+      const factor = angle===45?0.42:0.27;
+      length += 2*factor*rise;
+      formula += ` + 2×${factor}×${fmt(rise)} (crank @ ${angle}°)`;
+    }
+    $(prefix+'CL').innerHTML = `${fmt(length)} <small>mm</small>`;
+    $(prefix+'Formula').textContent = formula;
+    const totalM = (length*qty)/1000;
+    const posLabel = prefix==='beamBot'?'Bottom main':'Top main';
+    const shape = type==='cranked' ? `${posLabel} — Cranked` : `${posLabel} — Straight`;
+    return {mark: posLabel, shape, dia, length, qty, spacing:null, totalM, wt: totalM*unitWeight(dia)};
+  }
+  const botRow = mainBar('beamBot'), topRow = mainBar('beamTop');
+  const rows = [{mark:'Stirrup', shape:'Rectangular stirrup', dia:stDia, length:stirrupCL, qty:nStirrups, spacing, totalM:stirrupTotalM, wt:stirrupWt}, botRow, topRow].filter(r=>r.qty>0);
+  elementTotals.beam = renderBbs('beamBbsTable','beamGrandTotal', rows, 'beam');
+}
+
+function recalcColumn(hookMult, bendMult, lapMult){
+  const b = parseFloat($('colWidth').value)||0, D = parseFloat($('colDepth').value)||0;
+  const cover = parseFloat($('colCover').value)||0;
+  const heightM = parseFloat($('colHeight').value)||0;
+  const tieDia = parseFloat($('colTieDia').value);
+  const spacing = parseFloat($('colTieSpacing').value)||150;
+  const mainDia = parseFloat($('colMainDia').value);
+  drawSection('colSvg', b, D, cover, mainDia, tabHex('col'));
+
+  const A = b-2*cover, B = D-2*cover;
+  const hookLen = hookMult*tieDia, deduction = bendMult*tieDia;
+  const tieCL = 2*(A+B) + 2*hookLen - deduction;
+  $('colTieCL').innerHTML = `${fmt(tieCL)} <small>mm/pc</small>`;
+  $('colTieFormula').textContent = `2×(${fmt(A)}+${fmt(B)}) + 2×(${hookMult}×${tieDia}) − ${bendMult}×${tieDia}`;
+  const nTies = Math.ceil((heightM*1000)/spacing)+1;
+  $('colTieCount').textContent = nTies;
+  const tieTotalM = (tieCL*nTies)/1000;
+  const tieWt = tieTotalM*unitWeight(tieDia);
+  $('colTieWeight').textContent = fmt(tieWt,1)+' kg';
+
+  const qty = parseFloat($('colMainQty').value)||0;
+  const spliceOn = $('colSplice').checked;
+  const lap = spliceOn ? (ldMap[mainDia]||0)*lapMult : 0;
+  const mainLength = heightM*1000 + lap;
+  $('colMainCL').innerHTML = `${fmt(mainLength)} <small>mm</small>`;
+  $('colMainFormula').textContent = `${fmt(heightM*1000)} + ${spliceOn?fmt(lap)+' (lap)':'0'}`;
+  const mainTotalM = (mainLength*qty)/1000;
+  const mainWt = mainTotalM*unitWeight(mainDia);
+
+  const rows = [
+    {mark:'Tie', shape:'Rectangular tie', dia:tieDia, length:tieCL, qty:nTies, spacing, totalM:tieTotalM, wt:tieWt},
+    {mark:'Main vertical', shape:spliceOn?'Straight — with lap':'Straight', dia:mainDia, length:mainLength, qty, spacing:null, totalM:mainTotalM, wt:mainWt}
+  ].filter(r=>r.qty>0);
+  elementTotals.col = renderBbs('colBbsTable','colGrandTotal', rows, 'col');
+}
+
+function recalcFooting(hookMult){
+  const L = parseFloat($('footLength').value)||0, W = parseFloat($('footWidth').value)||0;
+  const cover = parseFloat($('footCover').value)||0;
+  const hookOn = $('footHook').checked;
+  const xDia = parseFloat($('footXDia').value), xSpacing = parseFloat($('footXSpacing').value)||150;
+  const yDia = parseFloat($('footYDia').value), ySpacing = parseFloat($('footYSpacing').value)||150;
+
+  const xQty = Math.ceil((W-2*cover)/xSpacing)+1;
+  const yQty = Math.ceil((L-2*cover)/ySpacing)+1;
+  drawPlan('footSvg', L, W, xQty, yQty);
+
+  const xHook = hookOn ? 2*hookMult*xDia : 0;
+  const xCL = L - 2*cover + xHook;
+  $('footXCL').innerHTML = `${fmt(xCL)} <small>mm/pc</small>`;
+  $('footXFormula').textContent = `${fmt(L)} − 2×${cover} ${hookOn?`+ 2×${hookMult}×${xDia}`:''}`;
+  const xTotalM = (xCL*xQty)/1000;
+
+  const yHook = hookOn ? 2*hookMult*yDia : 0;
+  const yCL = W - 2*cover + yHook;
+  $('footYCL').innerHTML = `${fmt(yCL)} <small>mm/pc</small>`;
+  $('footYFormula').textContent = `${fmt(W)} − 2×${cover} ${hookOn?`+ 2×${hookMult}×${yDia}`:''}`;
+  const yTotalM = (yCL*yQty)/1000;
+
+  const rows = [
+    {mark:'Along L (dir-1)', shape:hookOn?'Straight — 90° hooks':'Straight', dia:xDia, length:xCL, qty:xQty, spacing:xSpacing, totalM:xTotalM, wt:xTotalM*unitWeight(xDia)},
+    {mark:'Along W (dir-2)', shape:hookOn?'Straight — 90° hooks':'Straight', dia:yDia, length:yCL, qty:yQty, spacing:ySpacing, totalM:yTotalM, wt:yTotalM*unitWeight(yDia)}
+  ];
+  elementTotals.foot = renderBbs('footBbsTable','footGrandTotal', rows, 'foot');
+}
+
+function recalcSlab(){
+  const LxM = parseFloat($('slabLx').value)||0, LyM = parseFloat($('slabLy').value)||0;
+  const cover = parseFloat($('slabCover').value)||0;
+  const mainDia = parseFloat($('slabMainDia').value), mainSpacing = parseFloat($('slabMainSpacing').value)||150;
+  const distDia = parseFloat($('slabDistDia').value), distSpacing = parseFloat($('slabDistSpacing').value)||200;
+  const mainAnchor = $('slabMainAnchor').checked, distAnchor = $('slabDistAnchor').checked;
+
+  const mainQty = Math.ceil((LyM*1000)/mainSpacing)+1;
+  const distQty = Math.ceil((LxM*1000)/distSpacing)+1;
+  drawPlan('slabSvg', LxM*1000, LyM*1000, distQty, mainQty);
+
+  const mainLd = mainAnchor ? (ldMap[mainDia]||0) : 0;
+  const mainCL = LxM*1000 + 2*mainLd;
+  $('slabMainCL').innerHTML = `${fmt(mainCL)} <small>mm/pc</small>`;
+  $('slabMainFormula').textContent = `${fmt(LxM*1000)} + 2×${mainAnchor?fmt(mainLd)+' (Ld)':'0'}`;
+  const mainTotalM = (mainCL*mainQty)/1000;
+
+  const distLd = distAnchor ? (ldMap[distDia]||0) : 0;
+  const distCL = LyM*1000 + 2*distLd;
+  $('slabDistCL').innerHTML = `${fmt(distCL)} <small>mm/pc</small>`;
+  $('slabDistFormula').textContent = `${fmt(LyM*1000)} + 2×${distAnchor?fmt(distLd)+' (Ld)':'0'}`;
+  const distTotalM = (distCL*distQty)/1000;
+
+  const rows = [
+    {mark:'Main (Lx)', shape:'Straight', dia:mainDia, length:mainCL, qty:mainQty, spacing:mainSpacing, totalM:mainTotalM, wt:mainTotalM*unitWeight(mainDia)},
+    {mark:'Distribution (Ly)', shape:'Straight', dia:distDia, length:distCL, qty:distQty, spacing:distSpacing, totalM:distTotalM, wt:distTotalM*unitWeight(distDia)}
+  ];
+  elementTotals.slab = renderBbs('slabBbsTable','slabGrandTotal', rows, 'slab');
+}
+
+
+function applyMemberOptions(key){
+  const qty=Math.max(1,Number($(key+'MemberQty')?.value)||1);
+  const mark=($(key+'MemberMark')?.value||'').trim();
+  const rows=elementRows[key]||[];
+  rows.forEach((r,i)=>{
+    r.members=qty;
+    if(mark)r.memberMark=mark;
+  });
+  if(key==='beam' && $('beamStirrupShape'))$('beamStirrupType').value=$('beamStirrupShape').value.includes('4-leg')?'rect4':$('beamStirrupShape').value.includes('Cross')?'crosstie':'rect2';
+  if(key==='col' && $('colTieArrangement'))$('colTieType').value=$('colTieArrangement').value.includes('cross')?'crosstie':$('colTieArrangement').value.includes('diamond')?'diamond':'rect';
+  queueProjectSave();renderBbs(key+'BbsTable',key+'GrandTotal',rows,key);
+  toast(`${tabLabel(key)} member options applied`,'good');
+}
+function recalcActiveTab(key){
+  try{
+    if(key==='beam')recalcBeam(Number($('hookMult').value)||9,Number($('bendMult').value)||6);
+    if(key==='col')recalcColumn(Number($('hookMult').value)||9,Number($('bendMult').value)||6,Number($('lapMult').value)||1.0);
+    if(key==='foot')recalcFooting(Number($('hookMult').value)||9);
+    if(key==='slab')recalcSlab();
+    renderBbs(key+'BbsTable',key+'GrandTotal',elementRows[key]||[],key);
+    toast(`${tabLabel(key)} BBS recalculated`,'good');
+  }catch(e){toast('Please check the active tab inputs','warn');}
+}
+function recalcAll(){
+  const g = recalcGlobal();
+  const hookMult = parseFloat($('hookMult').value)||9;
+  const bendMult = parseFloat($('bendMult').value)||6;
+  recalcBeam(hookMult, bendMult);
+  recalcColumn(hookMult, bendMult, g.lapMult);
+  recalcFooting(hookMult);
+  recalcSlab();
+  updateStickyBar();
+  measureAndSetHeight();
+  queueProjectSave();
+}
+
+// ===================== SWIPEABLE, COLORED TAB CAROUSEL =====================
+let activeTabIndex = 0;
+const tabViewport = $('tabViewport');
+const tabTrack = $('tabTrack');
+
+function setActiveTabButton(key){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===key));
+}
+
+function measureAndSetHeight(){
+  if(!tabViewport) return;
+  const panels = document.querySelectorAll('.tabpanel');
+  const panel = panels[activeTabIndex];
+  if(panel) tabViewport.style.height = panel.scrollHeight + 'px';
+}
+
+function goToTabIndex(idx){
+  idx = Math.max(0, Math.min(TAB_ORDER.length-1, idx));
+  activeTabIndex = idx;
+  const key = TAB_ORDER[idx];
+  tabTrack.style.transform = `translateX(-${idx*25}%)`;
+  setActiveTabButton(key);
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.toggle('active', p.dataset.tab===key));
+  const memberTabLabel = $('memberTabLabel');
+  if(memberTabLabel) memberTabLabel.textContent = tabLabel(key);
+  measureAndSetHeight();
+}
+
+document.querySelectorAll('.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    goToTabIndex(TAB_ORDER.indexOf(btn.dataset.tab));
+  });
+});
+
+// Tab switching is tap-only (buttons above) — finger-drag swipe between
+// tabs was removed because it conflicted with horizontally scrolling the
+// BBS tables (a scroll gesture could accidentally flip to the next tab).
+
+['beamBotType','beamTopType'].forEach(id=>{
+  $(id).addEventListener('change', e=>{
+    $(id.replace('Type','AngleField')).style.display = e.target.value==='cranked' ? '' : 'none';
+    recalcAll();
+  });
+});
+
+document.querySelectorAll('input, select').forEach(el=>{
+  el.addEventListener('input', recalcAll);
+  el.addEventListener('change', recalcAll);
+});
+
+document.querySelectorAll('details.adv').forEach(d=>{
+  d.addEventListener('toggle', measureAndSetHeight);
+});
+
+window.addEventListener('resize', ()=>measureAndSetHeight());
+
+// ===================== TOAST FEEDBACK =====================
+let toastTimer = null;
+function toast(msg, type){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2600);
+}
+
+// ===================== STORAGE LAYER (verified localStorage + IndexedDB shadow backup) =====================
+// Wraps localStorage with a write-then-read verification pass. If the host
+// WebView blocks or silently drops storage, we fall back to an in-memory
+// store for the session, surface a visible banner, AND shadow-copy every
+// save into IndexedDB (a separate, often more reliable, storage engine in
+// embedded WebViews) so a fresh launch can recover data localStorage lost.
+const Store = (function(){
+  let persistent = true;
+  const memory = {};
+
+  function testPersistence(){
+    try{
+      const testKey = '__bbs_storage_test__';
+      localStorage.setItem(testKey, '1');
+      const ok = localStorage.getItem(testKey) === '1';
+      localStorage.removeItem(testKey);
+      return ok;
+    }catch(e){ return false; }
+  }
+  persistent = testPersistence();
+
+  return {
+    isPersistent(){ return persistent; },
+    get(key){
+      if(persistent){
+        try{ return localStorage.getItem(key); }catch(e){ persistent = false; }
+      }
+      return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : null;
+    },
+    set(key, value){
+      memory[key] = value; // always mirror to memory so current session never loses data
+      if(persistent){
+        try{
+          localStorage.setItem(key, value);
+          if(localStorage.getItem(key) !== value){ persistent = false; }
+        }catch(e){ persistent = false; }
+      }
+      return persistent;
+    }
+  };
+})();
+
+const IDB = (function(){
+  const DB_NAME = 'bbsCalcBackup', STORE = 'kv', VERSION = 1;
+  let dbPromise = null;
+  function open(){
+    if(dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve, reject)=>{
+      if(!window.indexedDB){ reject('no-idb'); return; }
+      const req = indexedDB.open(DB_NAME, VERSION);
+      req.onupgradeneeded = ()=>{ req.result.createObjectStore(STORE); };
+      req.onsuccess = ()=> resolve(req.result);
+      req.onerror = ()=> reject(req.error);
+    });
+    return dbPromise;
+  }
+  return {
+    async set(key, value){
+      try{
+        const db = await open();
+        return new Promise(resolve=>{
+          const tx = db.transaction(STORE,'readwrite');
+          tx.objectStore(STORE).put(value, key);
+          tx.oncomplete = ()=>resolve(true);
+          tx.onerror = ()=>resolve(false);
+        });
+      }catch(e){ return false; }
+    },
+    async get(key){
+      try{
+        const db = await open();
+        return new Promise(resolve=>{
+          const tx = db.transaction(STORE,'readonly');
+          const req = tx.objectStore(STORE).get(key);
+          req.onsuccess = ()=>resolve(req.result === undefined ? null : req.result);
+          req.onerror = ()=>resolve(null);
+        });
+      }catch(e){ return null; }
+    }
+  };
+})();
+
+function updateStorageBanner(){
+  const banner = $('storageBanner');
+  const chip = $('storeChip');
+  if(Store.isPersistent()){
+    if(banner) banner.classList.remove('show');
+    if(chip) chip.innerHTML = '<span class="dot" style="background:var(--good)"></span> Saved on this device';
+  } else {
+    if(banner) banner.classList.add('show');
+    if(chip) chip.innerHTML = '<span class="dot" style="background:#E0A54A"></span> Session only — back it up below';
+  }
+}
+
+// ===================== INDIVIDUAL PROJECT STORAGE =====================
+const PROJECT_DB_NAME = 'bbsProjectsIndividualV1';
+const PROJECT_DB_STORE = 'projects';
+let projectDbPromise = null;
+let projectSaveTimer = null;
+
+function openIndividualProjectDB(){
+  if(projectDbPromise) return projectDbPromise;
+  projectDbPromise = new Promise((resolve,reject)=>{
+    if(!window.indexedDB){ reject(new Error('IndexedDB unavailable')); return; }
+    const req = indexedDB.open(PROJECT_DB_NAME,1);
+    req.onupgradeneeded = e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(PROJECT_DB_STORE)) db.createObjectStore(PROJECT_DB_STORE,{keyPath:'id'});
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error || new Error('Database unavailable'));
+  });
+  return projectDbPromise;
+}
+function putIndividualProject(project){
+  return openIndividualProjectDB().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(PROJECT_DB_STORE,'readwrite');
+    tx.objectStore(PROJECT_DB_STORE).put(JSON.parse(JSON.stringify(project)));
+    tx.oncomplete=()=>resolve(true);
+    tx.onerror=()=>reject(tx.error || new Error('Save failed'));
+  }));
+}
+function deleteIndividualProject(id){
+  return openIndividualProjectDB().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(PROJECT_DB_STORE,'readwrite');
+    tx.objectStore(PROJECT_DB_STORE).delete(id);
+    tx.oncomplete=()=>resolve(true);
+    tx.onerror=()=>reject(tx.error || new Error('Delete failed'));
+  }));
+}
+function getAllIndividualProjects(){
+  return openIndividualProjectDB().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(PROJECT_DB_STORE,'readonly');
+    const req=tx.objectStore(PROJECT_DB_STORE).getAll();
+    req.onsuccess=()=>resolve(req.result||[]);
+    req.onerror=()=>reject(req.error || new Error('Read failed'));
+  }));
+}
+function projectStatus(msg, cls=''){
+  const el=$('projectSaveStatus');
+  if(el){ el.textContent=msg; el.className='project-save-status '+cls; }
+}
+async function saveCurrentProjectIndividually(){
+  const p=getCurrentProject();
+  if(!p) return;
+  try{
+    p.updatedAt=new Date().toISOString();
+    const list=loadProjects();
+    const idx=list.findIndex(x=>x.id===p.id);
+    if(idx>=0){ list[idx]=p; Store.set(PROJ_KEY,JSON.stringify(list)); }
+    await putIndividualProject(p);
+    await IDB.set(PROJ_KEY, loadProjects());
+    projectStatus('● Saved locally','ok');
+  }catch(e){
+    projectStatus('● Local backup active','pending');
+  }
+}
+function queueProjectSave(){
+  clearTimeout(projectSaveTimer);
+  projectSaveTimer=setTimeout(saveCurrentProjectIndividually,500);
+}
+async function restoreIndividualProjects(){
+  try{
+    const stored=await getAllIndividualProjects();
+    const local=loadProjects();
+    if(!stored.length) return;
+    const map=new Map();
+    [...local,...stored].forEach(p=>{
+      if(!p || !p.id) return;
+      const old=map.get(p.id);
+      const pt=new Date(p.updatedAt||p.createdAt||0).getTime();
+      const ot=old ? new Date(old.updatedAt||old.createdAt||0).getTime() : -1;
+      if(!old || pt>=ot) map.set(p.id,p);
+    });
+    const merged=[...map.values()];
+    if(JSON.stringify(merged)!==JSON.stringify(local)){
+      Store.set(PROJ_KEY,JSON.stringify(merged));
+      updateStorageBanner();
+    }
+  }catch(e){}
+}
+
+// ===================== PROJECTS DATA =====================
+const PROJ_KEY = 'bbsProjects';
+const CUR_KEY = 'bbsCurrentProjectId';
+
+function shadowBackup(){
+  IDB.set(PROJ_KEY, loadProjects());
+  IDB.set(CUR_KEY, getCurrentProjectId());
+}
+
+async function tryRestoreFromShadow(){
+  const local = loadProjects();
+  if(local.length) return false;
+  const backup = await IDB.get(PROJ_KEY);
+  if(backup && backup.length){
+    saveProjects(backup);
+    const curBackup = await IDB.get(CUR_KEY);
+    if(curBackup) setCurrentProjectId(curBackup);
+    else setCurrentProjectId(backup[0].id);
+    return true;
+  }
+  return false;
+}
+
+function loadProjects(){
+  try{
+    const raw = Store.get(PROJ_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveProjects(list){
+  const ok = Store.set(PROJ_KEY, JSON.stringify(list));
+  updateStorageBanner();
+  shadowBackup();
+  if(Array.isArray(list)){
+    list.forEach(p=>{
+      if(p && p.id){
+        if(!p.updatedAt) p.updatedAt = p.createdAt || new Date().toISOString();
+        putIndividualProject(p).catch(()=>{});
+      }
+    });
+  }
+  return ok;
+}
+function getCurrentProjectId(){
+  return Store.get(CUR_KEY);
+}
+function setCurrentProjectId(id){
+  Store.set(CUR_KEY, id);
+  shadowBackup();
+}
+function getCurrentProject(){
+  const id = getCurrentProjectId();
+  if(!id) return null;
+  return loadProjects().find(p=>p.id===id) || null;
+}
+function activeTabKey(){
+  return TAB_ORDER[activeTabIndex] || 'beam';
+}
+
+function updateProjectBadge(){
+  const proj = getCurrentProject();
+  const badge = $('projMemberBadge');
+  if(badge) badge.textContent = proj ? proj.members.length : 0;
+}
+
+function populateInitialProjectSelector(){
+  const wrap=$('initialProjectSelectWrap'),sel=$('initialProjectSelect'),btn=$('openExistingProjectBtn');if(!wrap||!sel)return;
+  const list=loadProjects();if(!list.length){wrap.style.display='none';if(btn)btn.style.display='none';return;}
+  wrap.style.display='block';sel.innerHTML=list.map(p=>`<option value="${p.id}">${esc(p.name)} — ${esc(p.location||'')}</option>`).join('');
+  if(btn){btn.style.display='block';if(!btn.dataset.bound){btn.dataset.bound='1';btn.addEventListener('click',()=>{if(!sel.value)return;setCurrentProjectId(sel.value);$('createProjectModal').classList.add('hidden');renderProjectPanel();});}}
+}
+function showCreateProjectModal(blocking){
+  $('createProjectModal').classList.remove('hidden');
+  $('createProjectModal').dataset.blocking = blocking ? '1' : '0';
+  $('newProjName').value = '';
+  $('newProjLocation').value = '';
+  $('newProjLocation').style.borderColor='';
+  populateInitialProjectSelector();
+  setTimeout(()=>$('newProjName').focus(),50);
+}
+
+function createProject(){
+  const nameEl=$('newProjName'), locEl=$('newProjLocation');
+  const name=nameEl.value.trim(), location=locEl.value.trim();
+  if(!name){nameEl.style.borderColor='#E05A4A';toast('Enter a project name to continue','warn');nameEl.focus();return;}
+  if(!location){locEl.style.borderColor='#E05A4A';toast('Site / location is required','warn');locEl.focus();return;}
+  nameEl.style.borderColor='';locEl.style.borderColor='';
+  const list=loadProjects(),id='p_'+Date.now(),now=new Date().toISOString();
+  list.push({id,name,location,client:$('newProjClient')?.value.trim()||'',consultant:$('newProjConsultant')?.value.trim()||'',drawingNo:$('newProjDrawing')?.value.trim()||'',revision:$('newProjRevision')?.value.trim()||'',concrete:'M25',steel:'Fe-500',lap:'50D',hook:'10D',qsStockLength:12,qsWastagePct:0,qsSteelRate:'',createdAt:now,updatedAt:now,members:[]});
+  const ok=saveProjects(list);setCurrentProjectId(id);$('createProjectModal').classList.add('hidden');
+  renderProjectPanel();toast(ok?`Project "${name}" created`:`Project created (session only)`,ok?'good':'warn');
+}
+
+function openProjectsPanel(){
+  if(!getCurrentProject()){showCreateProjectModal(false);return;}
+  $('projectsPanel').classList.remove('hidden');
+  renderProjectPanel();
+  showProjectTab('bbs');
+}
+function closeProjectsPanel(){ $('projectsPanel').classList.add('hidden'); }
+function sortedProjectList(){
+  const list=loadProjects().slice(),mode=($('projectSort')&&$('projectSort').value)||'updated';
+  if(mode==='nameAsc')list.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  else if(mode==='nameDesc')list.sort((a,b)=>String(b.name).localeCompare(String(a.name)));
+  else if(mode==='created')list.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  else list.sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+  return list;
+}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderProjectSwitcher(){
+  const sel=$('projSwitcher');if(!sel)return;const cur=getCurrentProjectId();
+  sel.innerHTML=sortedProjectList().map(p=>`<option value="${p.id}" ${p.id===cur?'selected':''}>${esc(p.name)}</option>`).join('');
+}
+function switchProject(id){setCurrentProjectId(id);renderProjectPanel();const p=getCurrentProject();if(p)toast(`Switched to "${p.name}"`);}
+function saveMember(){
+  const proj=getCurrentProject();if(!proj){toast('Create a project first','warn');return;}
+  const name=$('memberName').value.trim()||tabLabel(activeTabKey()),qty=Math.max(1,parseInt($('memberQty').value)||1),key=activeTabKey();
+  const rows=(elementRows[key]||[]).map(r=>({...r}));
+  if(!rows.length){toast('Calculate the active tab first','warn');return;}
+  const list=loadProjects(),p=list.find(x=>x.id===proj.id);if(!p)return;
+  p.members=Array.isArray(p.members)?p.members:[];
+  p.members.push({id:'m_'+Date.now(),name,qty,element:key,unitWt:elementTotals[key]||0,totalWt:(elementTotals[key]||0)*qty,rows,savedAt:new Date().toISOString()});
+  p.updatedAt=new Date().toISOString();const ok=saveProjects(list);setCurrentProjectId(p.id);
+  $('memberName').value='';$('memberQty').value=1;renderProjectPanel();toast(ok?`Saved "${name}"`:'Saved for this session only',ok?'good':'warn');
+}
+function deleteMember(memberId){
+  const proj=getCurrentProject();if(!proj)return;const list=loadProjects(),p=list.find(x=>x.id===proj.id);if(!p)return;
+  p.members=(p.members||[]).filter(m=>m.id!==memberId);p.updatedAt=new Date().toISOString();saveProjects(list);renderProjectPanel();toast('Member removed');
+}
+
+function showProjectTab(tab){
+  const views={bbs:$('projectBbsView'),members:$('projectMembersView'),abstract:$('projectAbstractView'),qs:$('projectQsView'),settings:$('projectSettingsView')};
+  Object.values(views).forEach(v=>v&&v.classList.add('hidden'));
+  if(views[tab])views[tab].classList.remove('hidden');
+  document.querySelectorAll('.pw-tab').forEach(b=>b.classList.remove('active'));
+  const ix={bbs:0,members:1,abstract:2,qs:3,settings:4}[tab];
+  if(document.querySelectorAll('.pw-tab')[ix])document.querySelectorAll('.pw-tab')[ix].classList.add('active');
+}
+function projectRows(p){
+  const rows=[];
+  (p.members||[]).forEach(m=>{
+    const rr=(Array.isArray(m.rows)&&m.rows.length)?m.rows:[{dia:m.dia||'',spacing:m.spacing||'',count:m.noOfBars||m.count||'',length:m.cuttingLength||m.unitCut||0,wt:m.unitWt||0}];
+    rr.forEach((r,i)=>{
+      const dia=Number(r.dia||r.diameter||0),sp=Number(r.spacing||0),count=Number(r.count||r.noOfBars||r.bars||0),cut=Number(r.length||r.cut||r.cuttingLength||r.unitCut||0),qty=Number(m.qty||1);
+      const totalM=cut*count*qty/1000,wt=Number(r.wt||0)>0?Number(r.wt)*qty:totalM*unitWeight(dia);
+      rows.push({type:tabLabel(m.element),name:m.name||'—',qty,dia,sp,count,cut,totalM,wt,id:m.id,rowIndex:i,shape:r.shape||r.mark||''});
+    });
+  }); return rows;
+}
+function renderProfessionalProjectBbs(){
+  const p=getCurrentProject();if(!p)return;
+  $('projectPanelName').textContent=p.name||'Project';
+  $('projectPanelLocation').textContent=p.location||'—';
+  const sn=$('settingsProjectNameInput');if(sn)sn.value=p.name||'';
+  const sl=$('settingsProjectLocationInput');if(sl)sl.value=p.location||'';
+  const fields={settingsClient:'client',settingsConsultant:'consultant',settingsDrawingNo:'drawingNo',settingsRevision:'revision'};
+  Object.entries(fields).forEach(([id,k])=>{if($(id))$(id).value=p[k]||'';});
+  if($('settingsConcrete'))$('settingsConcrete').value=p.concrete||'M25';
+  if($('settingsSteel'))$('settingsSteel').value=p.steel||'Fe-500';
+  if($('settingsLap'))$('settingsLap').value=p.lap||'50D';
+  if($('settingsHook'))$('settingsHook').value=p.hook||'10D';
+
+  const rows=projectRows(p),body=$('projectBbsBody'),foot=$('projectBbsFoot');
+  if(!body)return;
+  $('projectMemberTypes').textContent=new Set(rows.map(r=>r.type)).size;
+  $('projectMemberCount').textContent=(p.members||[]).length;
+
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:22px;color:var(--muted)">No saved members yet. Go to Members and save the active Beam / Column / Footing / Slab BBS.</td></tr>';
+    foot.innerHTML='';
+    $('projectSummaryTotal').textContent='0.0 kg';
+    return;
+  }
+
+  body.innerHTML=rows.map(r=>{
+    const perBarM=Number(r.cut||0)/1000;
+    const perBarKg=perBarM*unitWeight(Number(r.dia||0));
+    return `<tr>
+      <td><span class="member-type-badge">${esc(r.type)}</span></td>
+      <td><b>${esc(r.name)}</b>${r.shape?`<small class="shape-sub">${esc(r.shape)}</small>`:''}</td>
+      <td>${r.qty}</td>
+      <td><input class="pw-edit" type="number" min="0" value="${r.dia||''}" onchange="editProjectRow('${r.id}',${r.rowIndex},'dia',this.value)"></td>
+      <td><input class="pw-edit" type="number" min="0" value="${r.sp||''}" onchange="editProjectRow('${r.id}',${r.rowIndex},'spacing',this.value)"></td>
+      <td><input class="pw-edit" type="number" min="0" value="${r.count||''}" onchange="editProjectRow('${r.id}',${r.rowIndex},'count',this.value)"></td>
+      <td>${fmt(r.cut,0)}</td>
+      <td>${fmt(perBarM,3)}</td>
+      <td>${fmt(r.totalM,2)}</td>
+      <td>${fmt(perBarKg,3)}</td>
+      <td>${fmt(r.wt,2)}</td>
+    </tr>`;
+  }).join('');
+
+  const total=rows.reduce((s,r)=>s+r.wt,0);
+  const totalCut=rows.reduce((s,r)=>s+r.totalM,0);
+  foot.innerHTML=`<tr>
+    <td colspan="8">PROJECT TOTAL</td>
+    <td>${fmt(totalCut,2)}</td><td>—</td><td>${fmt(total,2)}</td>
+  </tr>`;
+  $('projectSummaryTotal').textContent=fmt(total,2)+' kg';
+}
+function editProjectRow(id,rowIndex,field,value){
+  const list=loadProjects(),p=list.find(x=>x.id===getCurrentProjectId());if(!p)return;
+  const m=(p.members||[]).find(x=>x.id===id);if(!m)return;
+  if(!Array.isArray(m.rows)||!m.rows.length)m.rows=[{length:m.unitCut||m.cuttingLength||0}];
+  const r=m.rows[Math.max(0,Number(rowIndex)||0)],n=Math.max(0,Number(value)||0);
+  if(field==='dia')r.dia=n;if(field==='spacing')r.spacing=n;if(field==='count')r.qty=n,r.count=Math.floor(n);
+  p.updatedAt=new Date().toISOString();saveProjects(list);renderProfessionalProjectBbs();
+}
+
+function renderMemberList(){
+  const p=getCurrentProject(),wrap=$('memberListWrap');if(!wrap)return;
+  if(!p||!(p.members||[]).length){wrap.innerHTML='<div class="pw-empty">No members saved in this project.</div>';return;}
+  wrap.innerHTML=p.members.map((m,i)=>`<div class="member-list-row"><span><span class="dot" style="background:${tabHex(m.element)}"></span><b>${esc(m.name||tabLabel(m.element))}</b> · ${tabLabel(m.element)} · ${m.qty||1} member(s)</span><button class="del" onclick="deleteMember('${m.id}')">×</button></div>`).join('');
+}
+function deleteMember(id){
+  const list=loadProjects(),p=list.find(x=>x.id===getCurrentProjectId());if(!p)return;
+  p.members=(p.members||[]).filter(m=>m.id!==id);p.updatedAt=new Date().toISOString();saveProjects(list);renderProjectPanel();toast('Member removed','good');
+}
+function saveProjectSettings(){
+  const list=loadProjects(),p=list.find(x=>x.id===getCurrentProjectId());if(!p)return;
+  const name=$('settingsProjectNameInput').value.trim(),loc=$('settingsProjectLocationInput').value.trim();
+  if(!name||!loc){toast('Project name and location are required','warn');return;}
+  p.name=name;p.location=loc;p.client=$('settingsClient').value.trim();p.consultant=$('settingsConsultant').value.trim();p.drawingNo=$('settingsDrawingNo').value.trim();p.revision=$('settingsRevision').value.trim();p.concrete=$('settingsConcrete').value;p.steel=$('settingsSteel').value;p.lap=$('settingsLap').value;p.hook=$('settingsHook').value;p.updatedAt=new Date().toISOString();
+  saveProjects(list);renderProjectPanel();toast('Project details saved','good');
+}
+
+function getProjectQsRows(){
+  const p=getCurrentProject(); if(!p)return [];
+  return projectRows(p);
+}
+function renderQsSummary(){
+  const p=getCurrentProject(); if(!p)return;
+  const rows=getProjectQsRows();
+  const stock=Math.max(0.1,Number(p.qsStockLength||12));
+  const wastage=Math.max(0,Number(p.qsWastagePct||0));
+  const rate=Number(p.qsSteelRate||0);
+  const byDia=new Map();
+  rows.forEach(r=>{
+    const key=Number(r.dia||0)||0;
+    if(!byDia.has(key))byDia.set(key,{cut:0,wt:0,pieces:0});
+    const x=byDia.get(key);x.cut+=Number(r.totalM||0);x.wt+=Number(r.wt||0);x.pieces+=Number(r.count||0)*Number(r.qty||1);
+  });
+  const theory=rows.reduce((s,r)=>s+Number(r.wt||0),0);
+  const cut=rows.reduce((s,r)=>s+Number(r.totalM||0),0);
+  const pieces=rows.reduce((s,r)=>s+Number(r.count||0)*Number(r.qty||1),0);
+  const wasteKg=theory*wastage/100,proc=theory+wasteKg;
+  $('qsTheoryWeight').textContent=fmt(theory,2)+' kg';
+  $('qsWastageWeight').textContent=fmt(wasteKg,2)+' kg';
+  $('qsProcurementWeight').textContent=fmt(proc,2)+' kg';
+  $('qsCutLength').textContent=fmt(cut,2)+' m';
+  $('qsBarPieces').textContent=fmt(pieces,0);
+  $('qsSteelAmount').textContent=rate>0?'₹ '+fmt(proc*rate,2):'—';
+  $('qsStockLength').value=stock;$('qsWastagePct').value=wastage;$('qsSteelRate').value=p.qsSteelRate||'';
+  const body=$('qsDiameterBody'),foot=$('qsDiameterFoot');
+  const entries=[...byDia.entries()].sort((a,b)=>a[0]-b[0]).filter(x=>x[0]>0);
+  body.innerHTML=entries.length?entries.map(([dia,x])=>{
+    const stockBars=Math.ceil(x.cut/stock);
+    const procurement=x.wt*(1+wastage/100);
+    return `<tr><td>${dia}</td><td>${fmt(x.cut,2)}</td><td>${fmt(x.wt,2)}</td><td>${stockBars}</td><td>${fmt(procurement,2)}</td></tr>`;
+  }).join(''):'<tr><td colspan="5" class="qs-empty">No bar quantities available.</td></tr>';
+  foot.innerHTML=entries.length?`<tr><td>TOTAL</td><td>${fmt(cut,2)}</td><td>${fmt(theory,2)}</td><td>—</td><td>${fmt(proc,2)}</td></tr>`:'';
+  const checks=[];
+  if(!p.name||!p.location)checks.push(['error','Project name and site/location are mandatory.']);
+  if(!p.revision)checks.push(['warn','BBS revision number is not set.']);
+  if(!p.drawingNo)checks.push(['warn','Structural drawing number is not set.']);
+  if(!rows.length)checks.push(['warn','No members have been saved into this project yet.']);
+  rows.forEach(r=>{
+    if(!r.dia)checks.push(['warn',`${r.name}: bar diameter is missing.`]);
+    if(!r.cut)checks.push(['warn',`${r.name}: cutting length is zero/missing; verify the active BBS calculation.`]);
+  });
+  if(!checks.length)checks.push(['ok','Basic QS data checks passed. Verify quantities against the approved structural drawings before procurement.']);
+  $('qsChecks').innerHTML=checks.map(x=>`<div class="qs-check ${x[0]}"><b>${x[0]==='ok'?'✓':x[0]==='error'?'!':'•'}</b>${esc(x[1])}</div>`).join('');
+}
+function saveQsSettings(){
+  const list=loadProjects(),p=list.find(x=>x.id===getCurrentProjectId());if(!p)return;
+  p.qsStockLength=Math.max(0.1,Number($('qsStockLength').value)||12);
+  p.qsWastagePct=Math.max(0,Math.min(20,Number($('qsWastagePct').value)||0));
+  p.qsSteelRate=Math.max(0,Number($('qsSteelRate').value)||0);
+  p.updatedAt=new Date().toISOString();saveProjects(list);renderQsSummary();toast('QS summary updated','good');
+}
+
+function elementMarkPrefix(key){return ({beam:'B',col:'C',foot:'F',slab:'S'}[key]||'M');}
+function shapeCodeForRow(r){
+  const s=String(r.shape||r.mark||'').toLowerCase();
+  if(s.includes('stirrup')||s.includes('tie')||s.includes('link'))return 'R1';
+  if(s.includes('crank'))return 'CR';
+  if(s.includes('hook'))return 'H';
+  if(s.includes('u'))return 'U';
+  if(s.includes('l'))return 'L';
+  return 'S';
+}
+function shapeSketch(code){
+  const map={S:'STR',L:'L',U:'U',H:'HOOK',R1:'LINK',CR:'CRANK'};
+  return map[code]||'REF';
+}
+function projectAbstractRows(p){
+  const out=[]; let seq=0;
+  (p.members||[]).forEach(m=>{
+    (m.rows||[]).forEach((r,i)=>{
+      seq++;
+      const dia=Number(r.dia||r.diameter||0),count=Number(r.count||r.noOfBars||r.bars||0),cut=Number(r.length||r.cut||r.cuttingLength||r.unitCut||0),qty=Number(m.qty||1);
+      const totalM=cut*count*qty/1000, wt=Number(r.wt||0)>0?Number(r.wt)*qty:totalM*unitWeight(dia);
+      const code=shapeCodeForRow(r), mark=r.barMark||`${elementMarkPrefix(m.element)}-${String(i+1).padStart(2,'0')}`;
+      out.push({mark,code,sketch:shapeSketch(code),type:tabLabel(m.element),member:m.name||'—',qty,dia,spacing:Number(r.spacing||0),count,cut,totalM,wt,id:m.id,rowIndex:i,lapLength:Number(r.lapLength||0),shape:r.shape||r.mark||''});
+    });
+  }); return out;
+}
+function renumberBarMarks(){
+  const list=loadProjects(),p=list.find(x=>x.id===getCurrentProjectId());if(!p)return;
+  const counters={beam:0,col:0,foot:0,slab:0};
+  (p.members||[]).forEach(m=>{
+    const prefix=elementMarkPrefix(m.element);counters[m.element]=(counters[m.element]||0);
+    (m.rows||[]).forEach((r,i)=>{counters[m.element]++;r.barMark=`${prefix}-${String(counters[m.element]).padStart(3,'0')}`;});
+  });
+  p.updatedAt=new Date().toISOString();saveProjects(list);renderBbsAbstract();renderProfessionalProjectBbs();toast('Bar marks renumbered','good');
+}
+function buildCuttingPlan(rows,stock){
+  const byDia=new Map();
+  rows.forEach(r=>{
+    if(!(r.dia>0)||!(r.cut>0)||!(r.count>0))return;
+    if(!byDia.has(r.dia))byDia.set(r.dia,[]);
+    for(let i=0;i<r.count*r.qty;i++)byDia.get(r.dia).push({len:r.cut,mark:r.mark});
+  });
+  const plans=[];
+  byDia.forEach((pieces,dia)=>{
+    pieces.sort((a,b)=>b.len-a.len);
+    const bins=[];
+    pieces.forEach(piece=>{
+      let bin=bins.find(b=>b.rem+1e-9>=piece.len/1000);
+      if(!bin){bin={cuts:[],used:0,rem:stock};bins.push(bin);}
+      bin.cuts.push(piece);bin.used+=piece.len/1000;bin.rem-=piece.len/1000;
+    });
+    bins.forEach((b,i)=>plans.push({dia,barNo:i+1,cuts:b.cuts,used:b.used,scrap:Math.max(0,b.rem),util:Math.min(100,b.used/stock*100)}));
+  });
+  return plans;
+}
+function renderBbsAbstract(){
+  const p=getCurrentProject();if(!p)return;
+  const rows=projectAbstractRows(p),body=$('abstractBody'),foot=$('abstractFoot');if(!body)return;
+  $('absItemCount').textContent=rows.length;
+  const theory=rows.reduce((s,r)=>s+r.wt,0);$('absTheory').textContent=fmt(theory,2)+' kg';
+  if(!rows.length){body.innerHTML='<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--muted)">No BBS items saved.</td></tr>';foot.innerHTML='';$('absProcurement').textContent='0.00 kg';$('absScrap').textContent='0.00 kg';return;}
+  body.innerHTML=rows.map(r=>`<tr>
+    <td class="bar-mark">${esc(r.mark)}</td><td class="shape-code">${esc(r.code)}</td><td><span class="shape-sketch">${esc(r.sketch)}</span></td><td>${esc(r.type)}</td><td>${esc(r.member)}</td><td>${r.qty}</td><td>${r.dia||'—'}</td><td>${r.spacing||'—'}</td><td>${r.count}</td><td>${fmt(r.cut,0)}</td><td>${fmt(r.totalM,2)}</td><td>${fmt(r.wt,2)}</td></tr>`).join('');
+  foot.innerHTML=`<tr><td colspan="11">TOTAL THEORETICAL STEEL</td><td>${fmt(theory,2)}</td></tr>`;
+  renderAbstractDiameter(rows);renderLapRecon(rows);renderCuttingAndProcurement(rows);
+}
+function renderAbstractDiameter(rows){
+  const p=getCurrentProject(),wast=Math.max(0,Number(p.qsWastagePct||0)),body=$('absDiaBody'),foot=$('absDiaFoot');
+  const by=new Map();rows.forEach(r=>{if(!by.has(r.dia))by.set(r.dia,{cut:0,wt:0});const x=by.get(r.dia);x.cut+=r.totalM;x.wt+=r.wt;});
+  let totalProc=0,totalScrap=0;
+  const stock=Math.max(.1,Number(p.qsStockLength||12)),plans=buildCuttingPlan(rows,stock);
+  const planBy=new Map();plans.forEach(x=>{if(!planBy.has(x.dia))planBy.set(x.dia,[]);planBy.get(x.dia).push(x);});
+  body.innerHTML=[...by.entries()].filter(([d])=>d>0).sort((a,b)=>a[0]-b[0]).map(([dia,x])=>{
+    const bars=(planBy.get(dia)||[]).length,proc=bars*stock*unitWeight(dia),scrap=Math.max(0,proc-x.wt);totalProc+=proc;totalScrap+=scrap;
+    return `<tr><td>${dia}</td><td>${fmt(x.cut,2)}</td><td>${fmt(x.wt,2)}</td><td>${fmt(scrap,2)}</td><td>${fmt(proc,2)}</td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="qs-empty">No valid diameter rows.</td></tr>';
+  foot.innerHTML=`<tr><td>TOTAL</td><td>${fmt(rows.reduce((s,r)=>s+r.totalM,0),2)}</td><td>${fmt(rows.reduce((s,r)=>s+r.wt,0),2)}</td><td>${fmt(totalScrap,2)}</td><td>${fmt(totalProc,2)}</td></tr>`;
+  $('absProcurement').textContent=fmt(totalProc,2)+' kg';$('absScrap').textContent=fmt(totalScrap,2)+' kg';
+}
+function renderLapRecon(rows){
+  const p=getCurrentProject(),body=$('lapReconBody'),lapText=p.lap||'Not configured';
+  const unique=new Map();
+  rows.forEach(r=>{const key=r.id+'|'+r.rowIndex;if(!unique.has(key))unique.set(key,r);});
+  body.innerHTML=[...unique.values()].map(r=>{
+    const configured=r.dia?(String(lapText).match(/([\d.]+)D/i)?Number(RegExp.$1)*r.dia:0):0;
+    const status=r.cut>0?(configured>0?'Check against approved BBS':'No project lap basis'): 'Missing cutting length';
+    return `<tr><td>${r.dia||'—'}</td><td>${esc(lapText)}</td><td>${configured?fmt(configured,0)+' mm':'—'}</td><td>${fmt(r.cut,0)} mm/bar</td><td>${esc(status)}</td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="qs-empty">No rows.</td></tr>';
+}
+function renderCuttingAndProcurement(rows){
+  const p=getCurrentProject(),stock=Math.max(.1,Number(p.qsStockLength||12)),plans=buildCuttingPlan(rows,stock),cb=$('cutPlanBody'),cf=$('cutPlanFoot'),pb=$('procBody'),pf=$('procFoot');
+  cb.innerHTML=plans.map(x=>`<tr><td>${x.dia}</td><td>${x.barNo}</td><td>${x.cuts.map(c=>fmt(c.len,0)).join(' + ')}</td><td>${fmt(x.used,3)}</td><td>${fmt(x.scrap,3)}</td><td>${fmt(x.util,1)}%</td></tr>`).join('')||'<tr><td colspan="6" class="qs-empty">No cutting plan available.</td></tr>';
+  const by=new Map();plans.forEach(x=>{if(!by.has(x.dia))by.set(x.dia,{bars:0});by.get(x.dia).bars++;});
+  let totalBars=0,totalLen=0,totalWt=0,totalScrap=0;
+  pb.innerHTML=[...by.entries()].sort((a,b)=>a[0]-b[0]).map(([dia,x])=>{
+    const len=x.bars*stock,wt=len*unitWeight(dia),theory=rows.filter(r=>r.dia===dia).reduce((s,r)=>s+r.wt,0),scrap=wt-theory;totalBars+=x.bars;totalLen+=len;totalWt+=wt;totalScrap+=scrap;
+    return `<tr><td>Reinforcement steel</td><td>${dia}</td><td>${fmt(stock,2)} m</td><td>${x.bars}</td><td>${fmt(len,2)}</td><td>${fmt(wt,2)}</td><td>${fmt(scrap,2)}</td></tr>`;
+  }).join('')||'<tr><td colspan="7" class="qs-empty">No procurement items available.</td></tr>';
+  cf.innerHTML=`<tr><td colspan="2">TOTAL STOCK BARS</td><td>${totalBars}</td><td colspan="2"></td><td>${fmt(totalWt,2)}</td></tr>`;
+  pf.innerHTML=`<tr><td colspan="3">TOTAL PROCUREMENT</td><td>${totalBars}</td><td>${fmt(totalLen,2)}</td><td>${fmt(totalWt,2)}</td><td>${fmt(totalScrap,2)}</td></tr>`;
+}
+function rebuildProcurementPlan(){renderBbsAbstract();toast('Cutting and procurement plan rebuilt','good');}
+function renderProjectPanel(){
+  renderProjectSwitcher();
+  renderProfessionalProjectBbs();
+  renderMemberList();
+  renderQsSummary();
+  renderBbsAbstract();
+}
+function deleteCurrentProject(){
+  const proj = getCurrentProject();
+  if(!proj) return;
+  if(!confirm(`Delete project "${proj.name}" and all its saved members? This can't be undone.`)) return;
+  let list = loadProjects().filter(p=>p.id!==proj.id);
+  saveProjects(list);
+  deleteIndividualProject(proj.id).catch(()=>{});
+  if(list.length){
+    setCurrentProjectId(list[0].id);
+    renderProjectSwitcher();
+    renderMemberList();
+    toast('Project deleted');
+  } else {
+    setCurrentProjectId('');
+    closeProjectsPanel();
+    showCreateProjectModal(true);
+  }
+}
+
+// ===================== BACKUP / RESTORE (.json — works regardless of WebView storage quirks) =====================
+async function shareBackupToDrive(){
+  const data = { projects: loadProjects(), currentId: getCurrentProjectId(), exportedAt: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  const filename = `bbs_backup_${Date.now()}.json`;
+  try{
+    const file = new File([json], filename, {type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'Rebar BBS backup', text:'BBS project backup file'});
+      toast('Share sheet opened — pick Google Drive to save your backup','good');
+      return;
+    }
+  }catch(e){
+    if(e && e.name==='AbortError') return; // user cancelled the share sheet — not an error
+  }
+  // Fallback for browsers/WebViews without file sharing: download the file so
+  // the person can upload it to Drive themselves from their Downloads folder.
+  exportBackup();
+  toast('File downloaded — open Google Drive, tap "+", and upload it from Downloads','warn');
+}
+function exportBackup(){
+  const data = { projects: loadProjects(), currentId: getCurrentProjectId(), exportedAt: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+    const blob = new Blob([json], {type:'application/json'});
+    const reader = new FileReader();
+    reader.onload = ()=>{ window.AppInventor.setWebViewString(reader.result); toast('Backup ready — Save from the share menu', 'good'); };
+    reader.readAsDataURL(blob);
+    return;
+  }
+  try{
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `bbs_backup_${Date.now()}.json`;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 3000);
+    toast('Backup file downloaded', 'good');
+  }catch(e){
+    toast('Could not create backup file on this device', 'warn');
+  }
+}
+function importBackup(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data || !Array.isArray(data.projects)) throw new Error('bad file');
+      saveProjects(data.projects);
+      if(data.currentId) setCurrentProjectId(data.currentId);
+      else if(data.projects[0]) setCurrentProjectId(data.projects[0].id);
+      renderProjectSwitcher(); renderMemberList();
+      toast('Backup restored', 'good');
+    }catch(e){
+      toast('That file could not be read as a backup', 'warn');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ===================== SHARE =====================
+function shareFullCalc(){
+  const text = buildReportText();
+  if(!text || !text.trim()){
+    toast('Nothing to share yet', 'warn');
+    return;
+  }
+
+  // Prefer the Web Share API when supported by the WebView.
+  if(navigator.share){
+    navigator.share({
+      title: 'Rebar BBS Calculation',
+      text: text
+    }).then(()=>{
+      toast('Calculation shared', 'good');
+    }).catch((err)=>{
+      // User cancellation is not an error worth surfacing.
+      if(err && err.name === 'AbortError') return;
+      deliverText(text, 'BBS calculation');
+    });
+    return;
+  }
+
+  // App Inventor / clipboard / print fallback.
+  deliverText(text, 'BBS calculation');
+}
+
+// ===================== PDF GENERATION (jsPDF + autoTable) =====================
+function pdfAvailable(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+
+function newDoc(){
+  const { jsPDF } = window.jspdf;
+  return new jsPDF({unit:'mm', format:'a4'});
+}
+
+function pdfHeader(doc, title, subtitle){
+  doc.setFillColor(20,23,27);
+  doc.rect(0,0,210,26,'F');
+  doc.setTextColor(255,122,41);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.text('REBAR BBS CALCULATOR', 14, 12);
+  doc.setTextColor(230,230,225);
+  doc.setFontSize(10.5);
+  doc.setFont('helvetica','normal');
+  doc.text(title, 14, 19);
+  if(subtitle){ doc.setFontSize(8.5); doc.setTextColor(160,168,180); doc.text(subtitle, 14, 24); }
+  doc.setTextColor(0,0,0);
+}
+
+function pdfFooter(doc){
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFontSize(7.5);
+    doc.setTextColor(140,140,140);
+    doc.text(`IS 2502 / IS 456:2000 / SP 34(S&T) — generated ${new Date().toLocaleString('en-IN')}`, 14, 290);
+    doc.text(`Page ${i} of ${pageCount}`, 196, 290, {align:'right'});
+  }
+}
+
+function rowsToAutoTable(doc, startY, rows, title, tone){
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(tone[0],tone[1],tone[2]);
+  doc.text(title, 14, startY);
+  doc.autoTable({
+    startY: startY+3,
+    head:[['Sl','Shape','No.','Dia','Spacing','Cut.Len(mm)','Total(m)','Wt(kg)']],
+    body: rows.map((r,i)=>[i+1, r.shape||r.mark, r.qty, r.dia+'mm', r.spacing?r.spacing+'mm':'—', fmt(r.length), fmt(r.totalM,1), fmt(r.wt,1)]),
+    theme:'grid',
+    headStyles:{fillColor:[30,34,40], textColor:255, fontSize:8},
+    bodyStyles:{fontSize:8},
+    margin:{left:14,right:14}
+  });
+  return doc.lastAutoTable.finalY;
+}
+
+function deliverPDF(doc, filename){
+  try{
+    if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+      const dataUri = doc.output('datauristring');
+      window.AppInventor.setWebViewString(dataUri);
+      toast('PDF ready — use Save in the app menu', 'good');
+      return;
+    }
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 3000);
+    toast('PDF downloaded', 'good');
+  }catch(e){
+    toast('Could not generate PDF — sharing as text instead', 'warn');
+    deliverText(buildReportText(), 'BBS report');
+  }
+}
+
+function generateElementPDF(key){
+  const rows = elementRows[key] || [];
+  if(!rows.length){ toast('Nothing calculated on this tab yet', 'warn'); return; }
+  if(!pdfAvailable()){ toast('PDF engine unavailable — use Share or Print', 'warn'); return; }
+  const doc = newDoc();
+  const proj = getCurrentProject();
+  pdfHeader(doc, `${tabLabel(key)} — Bar Bending Schedule`, proj ? `Project: ${proj.name}${proj.location?' · '+proj.location:''}` : '');
+  const y = rowsToAutoTable(doc, 34, rows, `${tabLabel(key)} elements`, TAB_COLORS[key]);
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(...TAB_COLORS[key]);
+  doc.text(`${tabLabel(key)} total steel: ${fmt(elementTotals[key],1)} kg`, 14, y+10);
+  pdfFooter(doc);
+  deliverPDF(doc, `${tabLabel(key)}_BBS_${Date.now()}.pdf`);
+}
+
+function generateFullCalcPDF(){
+  if(!pdfAvailable()){
+    toast('PDF engine unavailable — use Share or Print', 'warn');
+    return;
+  }
+  const doc = newDoc();
+  const proj = getCurrentProject();
+  pdfHeader(doc, 'Full Calculation — All Elements', proj ? `Project: ${proj.name}${proj.location?' · '+proj.location:''}` : '');
+  let y = 34, grand = 0, any = false;
+  TAB_ORDER.forEach(key=>{
+    const rows = elementRows[key];
+    if(!rows || !rows.length) return;
+    any = true;
+    if(y > 250){ doc.addPage(); y = 20; }
+    y = rowsToAutoTable(doc, y, rows, tabLabel(key), TAB_COLORS[key]) + 10;
+    grand += elementTotals[key];
+  });
+  if(!any){ toast('Nothing calculated yet', 'warn'); return; }
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(111,207,151);
+  doc.text(`GRAND TOTAL, ALL ELEMENTS: ${fmt(grand,1)} kg`, 14, y);
+  pdfFooter(doc);
+  deliverPDF(doc, `BBS_FullCalc_${Date.now()}.pdf`);
+}
+
+function generateProjectSummaryPDF(){ return generateProjectPDF(); }
+function generateProjectPDF(){
+  const p=getCurrentProject();if(!p){toast('Create a project first','warn');return;}
+  if(!pdfAvailable()){toast('PDF engine unavailable — use Share or Print','warn');return;}
+  const doc=newDoc(),rows=projectAbstractRows(p),stock=Math.max(.1,Number(p.qsStockLength||12));
+  pdfHeader(doc,`Complete BBS / QS — ${p.name}`,`${p.location||''} · Drawing ${p.drawingNo||'—'} · Revision ${p.revision||'—'}`);
+  let y=31;
+  doc.setFontSize(8.5);doc.setTextColor(50,50,50);
+  doc.text(`Client: ${p.client||'—'}   Consultant: ${p.consultant||'—'}   Concrete: ${p.concrete||'—'}   Steel: ${p.steel||'—'}`,14,y);y+=5;
+  doc.text(`Lap basis: ${p.lap||'—'}   Hook: ${p.hook||'—'}   Stock length: ${stock} m`,14,y);y+=7;
+  doc.autoTable({startY:y,head:[['Bar Mark','Shape','Type','Member','Qty','Dia','Spacing','CL/bar','Total CL','Wt kg']],
+    body:rows.map(r=>[r.mark,r.code,r.type,r.member,r.qty,r.dia||'—',r.spacing||'—',fmt(r.cut,0),fmt(r.totalM,2),fmt(r.wt,2)]),
+    theme:'grid',headStyles:{fillColor:[30,34,40],textColor:255,fontSize:7},bodyStyles:{fontSize:6.5},margin:{left:10,right:10}});
+  y=doc.lastAutoTable.finalY+8;
+  const theory=rows.reduce((s,r)=>s+r.wt,0),plans=buildCuttingPlan(rows,stock);
+  const by=new Map();plans.forEach(x=>{if(!by.has(x.dia))by.set(x.dia,0);by.set(x.dia,by.get(x.dia)+1);});
+  const proc=[...by.entries()].reduce((s,[dia,b])=>s+b*stock*unitWeight(dia),0);
+  if(y>250){doc.addPage();y=22;pdfHeader(doc,'BBS Abstract / Procurement','Diameter-wise summary');y=34;}
+  doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Diameter-wise Steel Abstract',14,y);
+  doc.autoTable({startY:y+3,head:[['Dia','Total CL (m)','Theory kg','Stock bars','Procurement kg','Scrap kg']],
+    body:[...by.keys()].sort((a,b)=>a-b).map(d=>{const rr=rows.filter(r=>r.dia===d),cl=rr.reduce((s,r)=>s+r.totalM,0),wt=rr.reduce((s,r)=>s+r.wt,0),bars=by.get(d),pw=bars*stock*unitWeight(d);return[d,fmt(cl,2),fmt(wt,2),bars,fmt(pw,2),fmt(pw-wt,2)];}),
+    theme:'grid',headStyles:{fillColor:[30,34,40],textColor:255,fontSize:7},bodyStyles:{fontSize:7},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+8;
+  if(y>250){doc.addPage();y=22;pdfHeader(doc,'Stock-Length Cutting Plan','Greedy first-fit planning by diameter');y=34;}
+  doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Stock-Length Cutting Plan',14,y);
+  doc.autoTable({startY:y+3,head:[['Dia','Stock Bar','Cut pieces (mm)','Used m','Scrap m','Utilisation']],
+    body:plans.map(x=>[x.dia,x.barNo,x.cuts.map(c=>fmt(c.len,0)).join(' + '),fmt(x.used,3),fmt(x.scrap,3),fmt(x.util,1)+'%']),
+    theme:'grid',headStyles:{fillColor:[30,34,40],textColor:255,fontSize:7},bodyStyles:{fontSize:6.5},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+8;
+  if(y>250){doc.addPage();y=22;pdfHeader(doc,'Material Procurement Schedule','Procurement planning abstract');y=34;}
+  doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Material Procurement Schedule',14,y);
+  doc.autoTable({startY:y+3,head:[['Material','Dia','Stock length','Stock bars','Procurement length','Procurement wt','Est. scrap']],
+    body:[...by.entries()].sort((a,b)=>a[0]-b[0]).map(([d,b])=>['Reinforcement steel',d,stock+' m',b,fmt(b*stock,2),fmt(b*stock*unitWeight(d),2),fmt(b*stock*unitWeight(d)-rows.filter(r=>r.dia===d).reduce((s,r)=>s+r.wt,0),2)]),
+    theme:'grid',headStyles:{fillColor:[30,34,40],textColor:255,fontSize:7},bodyStyles:{fontSize:7},margin:{left:14,right:14}});
+  pdfFooter(doc);deliverPDF(doc,`${p.name.replace(/[^a-z0-9]+/gi,'_')}_BBS_QS_${Date.now()}.pdf`);
+}
+
+// ===================== TEXT SHARE FALLBACK (only used if PDF engine is unavailable, e.g. offline) =====================
+function deliverText(text, label){
+  if(!text || !text.trim()){
+    toast('Nothing to share yet', 'warn');
+    return;
+  }
+  if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+    try{
+      window.AppInventor.setWebViewString(text);
+      toast(`${label} sent to Share menu`, 'good');
+      return;
+    }catch(e){ /* fall through */ }
+  }
+  if(navigator.share){
+    navigator.share({text}).then(()=>{
+      toast(`${label} shared`, 'good');
+    }).catch(()=>{ copyFallback(text, label); });
+    return;
+  }
+  copyFallback(text, label);
+}
+function copyFallback(text, label){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      toast(`${label} copied to clipboard`, 'good');
+    }).catch(()=>{
+      toast('Could not share or copy — try Print instead', 'warn');
+      window.print();
+    });
+  } else {
+    window.print();
+  }
+}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', async ()=>{
+  updateStorageBanner();
+  await restoreIndividualProjects();
+  const restored = await tryRestoreFromShadow();
+  if(restored){
+    renderProjectSwitcher();
+    renderMemberList();
+    toast('Restored your projects from backup', 'good');
+  }
+  // Always ask which project to work on when the app opens — never silently
+  // resume the last-used project without the person choosing it.
+  showCreateProjectModal(!getCurrentProject());
+  updateProjectBadge();
+  measureAndSetHeight();
+
+  const shareMainBtn = $('shareMainBtn');
+  if(shareMainBtn) shareMainBtn.addEventListener('click', shareFullCalc);
+  const savePdfBtn = $('savePdfBtn');
+  if(savePdfBtn) savePdfBtn.addEventListener('click', generateFullCalcPDF);
+  const shareProjBtn = $('shareProjBtn');
+  if(shareProjBtn) shareProjBtn.addEventListener('click', generateProjectPDF);
+  document.querySelectorAll('.btn-tab-pdf').forEach(btn=>{
+    btn.addEventListener('click', ()=>generateElementPDF(btn.dataset.tab));
+  });
+  const restoreInput = $('restoreFileInput');
+  if(restoreInput) restoreInput.addEventListener('change', ()=>importBackup(restoreInput.files[0]));
+});
+// =====================================================================
+
+recalcAll();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+
+/* Smooth element-tab navigation + per-member color */
+(function(){
+  const order=['beam','col','foot','slab'];
+  const colors={beam:'#FF7A29',col:'#5FA8D3',foot:'#6FCF97',slab:'#C792EA'};
+  let current=0;
+  function setTab(key, animate=true){
+    const i=order.indexOf(key); if(i<0)return;
+    current=i;
+    const track=$('tabTrack'), viewport=$('tabViewport');
+    if(track) track.style.transform=`translate3d(${-i*25}%,0,0)`;
+    document.querySelectorAll('.tabs button').forEach(b=>{
+      const active=b.dataset.tab===key;
+      b.classList.toggle('active',active);
+      b.style.backgroundColor=active?colors[key]:'';
+      b.style.borderColor=active?colors[key]:'';
+    });
+    document.querySelectorAll('.tabpanel').forEach(p=>{
+      const active=p.dataset.tab===key;
+      p.classList.toggle('active',active);
+      p.style.opacity=active?'1':'0.94';
+    });
+    const activePanel=document.querySelector('.tabpanel[data-tab="'+key+'"]');
+    if(activePanel && viewport){
+      const h=activePanel.scrollHeight;
+      viewport.style.height=Math.max(220,h)+'px';
+    }
+    document.documentElement.style.setProperty('--active-member-tone',colors[key]);
+  }
+  window.setElementTab=setTab;
+  document.querySelectorAll('.tabs button').forEach(btn=>{
+    btn.addEventListener('click',()=>setTab(btn.dataset.tab));
+  });
+  // Keep the active panel correct after calculations resize its content.
+  setTimeout(()=>setTab(document.querySelector('.tabs button.active')?.dataset.tab||'beam',false),0);
+  window.addEventListener('resize',()=>{
+    const p=document.querySelector('.tabpanel[data-tab="'+order[current]+'"]');
+    const v=$('tabViewport'); if(p&&v)v.style.height=Math.max(220,p.scrollHeight)+'px';
+  });
+})();
+</script>
+<div class="toast" id="toast"></div>
+
+<script id="mobile-bbs-summary-js">
+(function(){
+  function prepareBbsTables(){
+    const selectors=[
+      '#beamSummary table','#colSummary table','#footSummary table','#slabSummary table',
+      '.tabpanel table.bbs-table','.tabpanel table.summary-table','.ref-table table'
+    ];
+    const tables=[...document.querySelectorAll(selectors.join(','))];
+    tables.forEach(table=>{
+      let wrap=table.parentElement;
+      if(!wrap.classList.contains('summary-table-wrap') &&
+         !wrap.classList.contains('table-wrap') &&
+         !wrap.classList.contains('bbs-table-wrap') &&
+         !wrap.classList.contains('project-table-wrap') &&
+         !wrap.classList.contains('ref-table')){
+        wrap=document.createElement('div');
+        wrap.className='summary-table-wrap';
+        table.parentNode.insertBefore(wrap,table);
+        wrap.appendChild(table);
+      }
+      if(wrap && !wrap.dataset.hintReady){
+        wrap.dataset.hintReady='1';
+        const hint=document.createElement('div');
+        hint.className='mobile-swipe-hint';
+        hint.textContent='Swipe left/right to view all BBS columns';
+        wrap.parentNode.insertBefore(hint,wrap.nextSibling);
+      }
+      attachSmoothSlider(wrap,table);
+    });
+  }
+
+  function attachSmoothSlider(wrap,table){
+    if(wrap.dataset.sliderReady)return;
+    wrap.dataset.sliderReady='1';
+    const slider=document.createElement('input');
+    slider.type='range';
+    slider.min='0';slider.max='0';slider.value='0';slider.step='0.5';
+    slider.className='bbs-scroll-slider';
+    slider.setAttribute('aria-label','Scroll table horizontally');
+    const hint=wrap.nextElementSibling && wrap.nextElementSibling.classList.contains('mobile-swipe-hint') ? wrap.nextElementSibling : null;
+    wrap.parentNode.insertBefore(slider, hint || wrap.nextSibling);
+
+    let dragging=false;
+    function refresh(){
+      const maxScroll=Math.max(0,table.scrollWidth-wrap.clientWidth);
+      slider.max=String(maxScroll);
+      if(!dragging)slider.value=String(wrap.scrollLeft);
+      slider.style.display=maxScroll>2?'block':'none';
+    }
+    wrap.addEventListener('scroll',()=>{ if(!dragging)slider.value=String(wrap.scrollLeft); });
+    slider.addEventListener('pointerdown',()=>dragging=true);
+    slider.addEventListener('pointerup',()=>dragging=false);
+    slider.addEventListener('input',()=>{ wrap.scrollLeft=Number(slider.value); });
+    slider.addEventListener('change',()=>{ dragging=false; });
+    window.addEventListener('resize',refresh);
+    new MutationObserver(refresh).observe(table,{childList:true,subtree:true});
+    setTimeout(refresh,60);
+    refresh();
+  }
+
+  document.addEventListener('DOMContentLoaded',prepareBbsTables);
+  window.addEventListener('load',prepareBbsTables);
+  const observer=new MutationObserver(()=>prepareBbsTables());
+  observer.observe(document.body,{childList:true,subtree:true});
+})();
+
+
+</script>
+
+<script id="individual-bbs-options-listener-v10">
+(function(){
+  function wire(){
+    ['beam','col','foot','slab'].forEach(key=>{
+      [key+'MemberQty',key+'MemberMark'].forEach(id=>{
+        const el=$(id); if(el && !el.dataset.bbsWired){el.dataset.bbsWired='1';el.addEventListener('change',()=>applyMemberOptions(key));}
+      });
+    });
+  }
+  document.addEventListener('DOMContentLoaded',wire);window.addEventListener('load',wire);
+})();
+</script>
+</body>
+</html>
