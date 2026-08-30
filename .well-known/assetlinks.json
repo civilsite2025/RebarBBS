@@ -1,9 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "io.github.civilsite2025.twa",
-        "sha256_cert_fingerprints": ["A7:D4:6F:99:A3:89:89:81:C1:1B:96:31:3F:3A:D7:12:50:9A:76:85:CE:7E:6B:42:A0:9E:0D:39:16:15:A5:EA"]
-      }
-    }]
-
