@@ -1,0 +1,15 @@
+{
+  "name": "Rebar BBS Calculator",
+  "short_name": "BBS Calc",
+  "description": "Bar bending schedule calculator for beam, column, footing and slab — IS 2502 / IS 456 / SP 34.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14171B",
+  "theme_color": "#14171B",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
