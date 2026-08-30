@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<style>html,body{background:#14171B;margin:0;}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Rebar BBS Calculator — Beam / Column / Footing / Slab</title>
 <link rel="manifest" href="manifest.json">
@@ -59,8 +60,8 @@
   .subhead{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;color:var(--steel);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--line);}
   .subhead:first-of-type{border-top:none;padding-top:0;margin-top:4px;}
 
-  table{width:100%;border-collapse:collapse;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;margin-top:4px;}
-  th,td{padding:7px 5px;text-align:right;border-bottom:1px solid var(--line);}
+  table{width:100%;min-width:560px;border-collapse:collapse;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;margin-top:4px;}
+  th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;}
   th:first-child,td:first-child{text-align:left;}
   th{color:var(--muted);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
   td.tot{color:var(--good);font-weight:600;}
@@ -84,7 +85,9 @@
     .wrap{max-width:100%;}
     .card{border:1px solid #999;background:#fff;break-inside:avoid;page-break-inside:avoid;}
     .outline{background:#f4f4f4;}
-    table{font-size:11px;}
+    table{font-size:10px;min-width:0;}
+    th,td{white-space:normal;padding:5px 3px;}
+    .ref-table{overflow-x:visible;}
   }
 </style>
 </head>
@@ -206,7 +209,7 @@
 
     <div class="card">
       <h2>Beam BBS summary</h2>
-      <table id="beamBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Beam total</td><td class="tot" id="beamGrandTotal">—</td></tr></tfoot></table>
+      <div class="ref-table"><table id="beamBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Beam total</td><td class="tot" id="beamGrandTotal">—</td></tr></tfoot></table></div>
     </div>
   </section>
 
@@ -251,7 +254,7 @@
 
     <div class="card">
       <h2>Column BBS summary</h2>
-      <table id="colBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Column total</td><td class="tot" id="colGrandTotal">—</td></tr></tfoot></table>
+      <div class="ref-table"><table id="colBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Column total</td><td class="tot" id="colGrandTotal">—</td></tr></tfoot></table></div>
     </div>
   </section>
 
@@ -285,7 +288,7 @@
 
     <div class="card">
       <h2>Footing BBS summary</h2>
-      <table id="footBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Footing total</td><td class="tot" id="footGrandTotal">—</td></tr></tfoot></table>
+      <div class="ref-table"><table id="footBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Footing total</td><td class="tot" id="footGrandTotal">—</td></tr></tfoot></table></div>
     </div>
   </section>
 
@@ -320,7 +323,7 @@
 
     <div class="card">
       <h2>Slab BBS summary</h2>
-      <table id="slabBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Slab total</td><td class="tot" id="slabGrandTotal">—</td></tr></tfoot></table>
+      <div class="ref-table"><table id="slabBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Slab total</td><td class="tot" id="slabGrandTotal">—</td></tr></tfoot></table></div>
     </div>
   </section>
 
