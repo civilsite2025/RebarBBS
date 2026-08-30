@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>html,body{background:#14171B;margin:0;}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Rebar BBS Calculator — Beam / Column / Footing / Slab</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14171B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BBS Calc">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#14171B; --panel:#1E2228; --panel-alt:#262B33; --line:#333941;
+    --text:#ECEAE4; --muted:#8B93A0; --accent:#FF7A29; --steel:#5FA8D3; --good:#6FCF97;
+    --c-beam:#FF7A29; --c-col:#5FA8D3; --c-foot:#6FCF97; --c-slab:#C792EA;
+  }
+  *{box-sizing:border-box;}
+  button, select, input, a{ touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;}
+  body{padding-bottom:84px;}
+  h1,h2,h3{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-stretch:condensed;font-weight:700;letter-spacing:.02em;margin:0;}
+  .wrap{max-width:640px;margin:0 auto;padding:14px 14px 8px;}
+  header.top{padding:20px 132px 12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:6;}
+
+  .hdr-projects-btn{position:absolute;top:16px;right:14px;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);height:42px;padding:0 12px 0 10px;border-radius:21px;display:flex;align-items:center;gap:6px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12.5px;font-weight:600;letter-spacing:.02em;z-index:20;transition:transform .1s ease, border-color .15s ease, background .15s ease;}
+  .hdr-projects-btn:active{transform:scale(0.93);background:var(--line);}
+  .hdr-projects-btn .hpb-ico{font-size:16px;line-height:1;}
+  .hdr-projects-btn .hpb-badge{background:var(--accent);color:#1A1200;font-size:10.5px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+  .modal-overlay.hidden{display:none;}
+  .modal-sheet{background:var(--panel);border:1px solid var(--line);border-radius:16px 16px 0 0;padding:20px 18px 28px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;}
+  .modal-sheet h2{font-size:22px;margin-bottom:4px;}
+  .modal-sheet .desc{color:var(--muted);font-size:12.5px;margin-bottom:16px;}
+  .modal-close{float:right;background:none;border:none;color:var(--muted);font-size:22px;line-height:1;}
+  .btn-primary{background:var(--accent);color:#1A1200;border:none;padding:14px 16px;min-height:48px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-weight:600;font-size:14px;width:100%;transition:transform .1s ease, opacity .15s ease;}
+  .btn-primary:active{transform:scale(0.97);opacity:0.9;}
+  .btn-secondary{background:var(--panel-alt);color:var(--text);border:1px solid var(--line);padding:12px 14px;min-height:44px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;transition:transform .1s ease, background .15s ease;}
+  .btn-secondary:active{transform:scale(0.96);background:var(--line);}
+  .proj-switch-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;}
+  .proj-switch-row select{flex:1;}
+  .member-form{background:var(--panel-alt);border:1px dashed var(--line);border-radius:8px;padding:12px;margin-bottom:14px;}
+  .member-list-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12.5px;}
+  .member-list-row .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;}
+  .member-list-row .del{color:#E05A4A;background:none;border:none;font-size:16px;padding:4px 8px;}
+  .element-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .element-chip{border:1px solid;border-radius:20px;padding:4px 10px;font-size:10.5px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;background:rgba(255,255,255,0.03);}
+  .summary-total{background:var(--panel-alt);border-radius:8px;padding:14px;margin-top:10px;text-align:center;}
+  .summary-total .num{color:var(--good);font-size:26px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-weight:600;}
+  .store-chip{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);margin-bottom:10px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  .store-chip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;}
+
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--panel-alt);border:1px solid var(--accent);color:var(--text);padding:12px 20px;border-radius:10px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;z-index:100;opacity:0;transition:opacity .25s ease, transform .25s ease;pointer-events:none;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.warn{border-color:#E05A4A;color:#FFD4CE;}
+  .toast.good{border-color:var(--good);}
+  .storage-banner{background:#3A2416;border:1px solid #E0A54A;color:#F5D9A8;font-size:11.5px;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:none;line-height:1.4;}
+  .storage-banner.show{display:block;}
+  header.top .eyebrow{color:var(--accent);font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;}
+  header.top h1{font-size:clamp(19px,6.2vw,26px);line-height:1.05;color:var(--text);}
+  header.top .sub{color:var(--muted);font-size:12px;margin-top:5px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+
+  .tabs{display:flex;gap:6px;position:sticky;top:76px;background:var(--bg);z-index:5;padding:10px 14px;border-bottom:1px solid var(--line);max-width:640px;margin:0 auto;}
+  .tabs button{flex:1;background:var(--panel);border:1px solid var(--line);border-bottom:2px solid transparent;color:var(--muted);padding:13px 4px;min-height:46px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;letter-spacing:.03em;text-transform:uppercase;transition:background .22s ease, color .22s ease, border-color .22s ease, transform .1s ease;}
+  .tabs button:active{transform:scale(0.95);}
+  .tabs button[data-tab="beam"]{border-bottom-color:rgba(255,122,41,.35);}
+  .tabs button[data-tab="col"]{border-bottom-color:rgba(95,168,211,.35);}
+  .tabs button[data-tab="foot"]{border-bottom-color:rgba(111,207,151,.35);}
+  .tabs button[data-tab="slab"]{border-bottom-color:rgba(199,146,234,.35);}
+  .tabs button.active{font-weight:600;}
+  .tabs button[data-tab="beam"].active{background:var(--c-beam);border-color:var(--c-beam);color:#241200;}
+  .tabs button[data-tab="col"].active{background:var(--c-col);border-color:var(--c-col);color:#04202E;}
+  .tabs button[data-tab="foot"].active{background:var(--c-foot);border-color:var(--c-foot);color:#062616;}
+  .tabs button[data-tab="slab"].active{background:var(--c-slab);border-color:var(--c-slab);color:#210836;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 6px 16px -10px rgba(0,0,0,.6);}
+  .card h2{font-size:19px;color:var(--text);margin-bottom:2px;}
+  .card .desc{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.4;}
+  .row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .field{flex:1 1 110px;min-width:100px;}
+  .field label{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  input[type=number],select{width:100%;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);padding:10px 8px;border-radius:6px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:15px;}
+  input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);}
+  select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+  .checkline{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .checkline input{width:16px;height:16px;}
+
+  details.adv{margin-top:6px;}
+  details.adv summary{cursor:pointer;color:var(--steel);font-size:12px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;letter-spacing:.03em;}
+  details.adv .row{margin-top:10px;}
+
+  .diagram{display:flex;justify-content:center;padding:6px 0 4px;}
+  .diagram svg{width:100%;max-width:220px;height:auto;}
+
+  .outline{margin-top:10px;background:var(--panel-alt);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;}
+  .outline .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  .outline .val{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:21px;color:var(--tone, var(--accent));font-weight:600;margin-top:2px;transition:color .22s ease;}
+  .outline .val small{color:var(--muted);font-size:13px;margin-left:6px;}
+  .outline .formula{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;color:var(--muted);margin-top:6px;word-break:break-word;}
+
+  .subhead{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;color:var(--steel);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--line);}
+  .subhead:first-of-type{border-top:none;padding-top:0;margin-top:4px;}
+
+  table{width:100%;min-width:560px;border-collapse:collapse;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;margin-top:4px;}
+  th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th:first-child,td:first-child{text-align:left;}
+  th{color:var(--muted);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
+  td.tot{color:var(--good);font-weight:600;}
+  tfoot td{border-bottom:none;border-top:2px solid var(--line);color:var(--tone, var(--accent));font-weight:600;padding-top:10px;}
+  .ref-table{overflow-x:auto;}
+
+  .btn-tab-pdf{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:transparent;border:1px solid var(--tone, var(--accent));color:var(--tone, var(--accent));padding:11px 14px;min-height:42px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;font-weight:600;letter-spacing:.02em;transition:transform .1s ease, background .15s ease;width:100%;justify-content:center;}
+  .btn-tab-pdf:active{transform:scale(0.97);background:rgba(255,255,255,0.06);}
+
+  .tab-viewport{overflow:hidden;position:relative;min-height:220px;transition:height .3s cubic-bezier(.22,.68,0,1);}
+  .tab-track{display:flex;align-items:flex-start;width:400%;transition:transform .38s cubic-bezier(.22,.68,0,1);will-change:transform;}
+  .tabpanel{flex:0 0 25%;max-width:25%;min-width:0;padding:0 1px;}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:10;pointer-events:auto;}
+  .bar .lbl{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .bar .val{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:22px;color:var(--good);font-weight:600;}
+  .bar button{background:var(--accent);color:#1A1200;border:none;padding:14px 20px;min-height:48px;min-width:120px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-weight:600;font-size:13px;letter-spacing:.02em;transition:transform .1s ease, opacity .15s ease;position:relative;z-index:11;cursor:pointer;}
+  .bar button:active{transform:scale(0.95);opacity:0.9;}
+
+  .note{font-size:11.5px;color:var(--muted);line-height:1.5;padding:6px 16px 20px;}
+  .note b{color:var(--text);}
+
+  @page{ margin: 12mm; }
+  @media print{
+    .bar,.tabs,details.adv,header.top .sub,.hdr-projects-btn{display:none!important;}
+    body{background:#fff;color:#000;padding-bottom:0;}
+    .wrap{max-width:100%;}
+    .tab-viewport{overflow:visible!important;height:auto!important;}
+    .tab-track{display:block!important;width:100%!important;transform:none!important;}
+    .tabpanel{display:none!important;max-width:100%!important;flex-basis:100%!important;}
+    .tabpanel.active{display:block!important;}
+    .card{border:1px solid #999;background:#fff;break-inside:avoid;page-break-inside:avoid;}
+    .outline{background:#f4f4f4;}
+    table{font-size:10px;min-width:0;}
+    th,td{white-space:normal;padding:5px 3px;}
+    .ref-table{overflow-x:visible;}
+    .btn-tab-pdf{display:none!important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <button class="hdr-projects-btn" onclick="openProjectsPanel()" title="My Projects">
+    <span class="hpb-ico">📁</span><span>Projects</span><span class="hpb-badge" id="projMemberBadge">0</span>
+  </button>
+  <div class="eyebrow">Site Reference · Reinforcement</div>
+  <h1>Rebar BBS Calculator</h1>
+  <div class="sub">IS 2502 · IS 456:2000 · SP 34(S&T) — verify against structural drawings</div>
+  <div class="sub" style="color:var(--accent);margin-top:4px;">BUILD: 2026-08-31-pro-ui-swipe-pdf-v4</div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="beam">Beam</button>
+  <button data-tab="col">Column</button>
+  <button data-tab="foot">Footing</button>
+  <button data-tab="slab">Slab</button>
+</nav>
+
+<div class="wrap">
+
+  <div class="card">
+    <h2>Project settings</h2>
+    <div class="desc">Shared across all elements below.</div>
+    <div class="row">
+      <div class="field">
+        <label>Concrete grade</label>
+        <select id="concreteGrade">
+          <option value="20">M20</option><option value="25" selected>M25</option>
+          <option value="30">M30</option><option value="35">M35</option><option value="40">M40</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Steel grade</label>
+        <select id="steelGrade">
+          <option value="415">Fe 415</option><option value="500" selected>Fe 500</option>
+          <option value="500">Fe 500D</option><option value="550">Fe 550</option>
+        </select>
+      </div>
+    </div>
+    <details class="adv">
+      <summary>Advanced — stirrup/tie hook &amp; bend allowances</summary>
+      <div class="row">
+        <div class="field"><label>Hook length (×dia, 135°)</label><input type="number" id="hookMult" value="9" step="0.5"></div>
+        <div class="field"><label>Total bend deduction (×dia)</label><input type="number" id="bendMult" value="6" step="0.5"></div>
+      </div>
+      <div class="note" style="padding:0;margin-top:2px;">Common SP 34 site-practice defaults (9d hooks, ~6d deduction for a 4-bend rectangular tie/stirrup). Adjust if your project's BBS standard differs.</div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Development &amp; lap length</h2>
+    <div class="desc">Ld = (φ × 0.87fy) / (4 × τbd), deformed bars — IS 456 Cl. 26.2.1. Used automatically wherever anchorage/lap is needed below.</div>
+    <div class="row">
+      <div class="field">
+        <label>Lap length =</label>
+        <select id="lapMult">
+          <option value="1">1.0 × Ld</option>
+          <option value="1.3" selected>1.3 × Ld</option>
+          <option value="2">2.0 × Ld (all bars at one section)</option>
+        </select>
+      </div>
+    </div>
+    <div class="ref-table">
+      <table id="ldTable"><thead><tr><th>Dia</th><th>τbd</th><th>Ld</th><th>Ld/φ</th><th>Lap</th><th>50φ*</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="note" style="padding:6px 0 0;">*Site thumb-rule (50φ) shown for cross-check only — the code-computed Ld governs.</div>
+  </div>
+
+  <div class="tab-viewport" id="tabViewport">
+    <div class="tab-track" id="tabTrack">
+
+      <!-- BEAM TAB -->
+      <section class="tabpanel active" data-tab="beam" id="beamTab" style="--tone:var(--c-beam)">
+        <div class="card">
+          <h2>Beam &amp; stirrups</h2>
+          <div class="desc">Rectangular 2-legged stirrup, cutting length as per IS 2502 / SP 34.</div>
+          <div class="row">
+            <div class="field"><label>Width b (mm)</label><input type="number" id="beamWidth" value="300"></div>
+            <div class="field"><label>Depth D (mm)</label><input type="number" id="beamDepth" value="450"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="beamCover" value="25"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Clear span (m)</label><input type="number" id="beamSpan" value="4.0" step="0.05"></div>
+            <div class="field"><label>Stirrup dia</label><select id="beamStirrupDia"><option value="6">6mm</option><option value="8" selected>8mm</option><option value="10">10mm</option><option value="12">12mm</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="beamStirrupSpacing" value="150"></div>
+          </div>
+          <div class="diagram"><svg id="beamSvg" viewBox="0 0 220 220"></svg></div>
+          <div class="outline">
+            <div class="lbl">Stirrup cutting length</div>
+            <div class="val" id="beamStirrupCL">— <small>mm/pc</small></div>
+            <div class="formula" id="beamStirrupFormula"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="field"><label>No. of stirrups</label><div id="beamStirrupCount" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;">—</div></div>
+            <div class="field"><label>Steel (this dia)</label><div id="beamStirrupWeight" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Main bars</h2>
+          <div class="desc">Straight or cranked, with optional anchorage using Ld above.</div>
+          <div class="subhead">Bottom bars</div>
+          <div class="row">
+            <div class="field"><label>Qty</label><input type="number" id="beamBotQty" value="3" min="0"></div>
+            <div class="field"><label>Dia</label><select id="beamBotDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option><option>32</option></select></div>
+            <div class="field"><label>Type</label><select id="beamBotType"><option value="straight">Straight</option><option value="cranked">Cranked</option></select></div>
+            <div class="field" id="beamBotAngleField"><label>Bend angle</label><select id="beamBotAngle"><option value="45">45°</option><option value="30">30°</option></select></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="beamBotAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Bottom bar length (each)</div><div class="val" id="beamBotCL">— <small>mm</small></div><div class="formula" id="beamBotFormula"></div></div>
+
+          <div class="subhead">Top bars</div>
+          <div class="row">
+            <div class="field"><label>Qty</label><input type="number" id="beamTopQty" value="2" min="0"></div>
+            <div class="field"><label>Dia</label><select id="beamTopDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option><option>32</option></select></div>
+            <div class="field"><label>Type</label><select id="beamTopType"><option value="straight" selected>Straight</option><option value="cranked">Cranked</option></select></div>
+            <div class="field" id="beamTopAngleField" style="display:none;"><label>Bend angle</label><select id="beamTopAngle"><option value="45">45°</option><option value="30">30°</option></select></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="beamTopAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Top bar length (each)</div><div class="val" id="beamTopCL">— <small>mm</small></div><div class="formula" id="beamTopFormula"></div></div>
+        </div>
+
+        <div class="card">
+          <h2>Beam BBS summary</h2>
+          <div class="ref-table"><table id="beamBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Beam total</td><td class="tot" id="beamGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="beam">⭳ Save Beam PDF</button>
+        </div>
+      </section>
+
+      <!-- COLUMN TAB -->
+      <section class="tabpanel" data-tab="col" id="colTab" style="--tone:var(--c-col)">
+        <div class="card">
+          <h2>Column &amp; ties</h2>
+          <div class="desc">Rectangular lateral tie, cutting length as per IS 2502 / SP 34.</div>
+          <div class="row">
+            <div class="field"><label>Width b (mm)</label><input type="number" id="colWidth" value="300"></div>
+            <div class="field"><label>Depth D (mm)</label><input type="number" id="colDepth" value="300"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="colCover" value="40"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Clear height (m)</label><input type="number" id="colHeight" value="3.0" step="0.05"></div>
+            <div class="field"><label>Tie dia</label><select id="colTieDia"><option value="6">6mm</option><option value="8" selected>8mm</option><option value="10">10mm</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="colTieSpacing" value="150"></div>
+          </div>
+          <div class="diagram"><svg id="colSvg" viewBox="0 0 220 220"></svg></div>
+          <div class="outline">
+            <div class="lbl">Tie cutting length</div>
+            <div class="val" id="colTieCL">— <small>mm/pc</small></div>
+            <div class="formula" id="colTieFormula"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="field"><label>No. of ties</label><div id="colTieCount" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;">—</div></div>
+            <div class="field"><label>Steel (this dia)</label><div id="colTieWeight" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Longitudinal (main) bars</h2>
+          <div class="desc">Single lift, straight, with optional lap splice for the bar continuing into the storey above.</div>
+          <div class="row">
+            <div class="field"><label>Qty</label><input type="number" id="colMainQty" value="8" min="0"></div>
+            <div class="field"><label>Dia</label><select id="colMainDia"><option>12</option><option selected>16</option><option>20</option><option>25</option><option>32</option></select></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="colSplice" checked><label>Add lap splice length (from table above)</label></div>
+          <div class="outline"><div class="lbl">Main bar length (each)</div><div class="val" id="colMainCL">— <small>mm</small></div><div class="formula" id="colMainFormula"></div></div>
+          <div class="note" style="padding:6px 0 0;">Dowel/anchorage into footing is a separate item — see Footing tab.</div>
+        </div>
+
+        <div class="card">
+          <h2>Column BBS summary</h2>
+          <div class="ref-table"><table id="colBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Column total</td><td class="tot" id="colGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="col">⭳ Save Column PDF</button>
+        </div>
+      </section>
+
+      <!-- FOOTING TAB -->
+      <section class="tabpanel" data-tab="foot" id="footTab" style="--tone:var(--c-foot)">
+        <div class="card">
+          <h2>Isolated footing — bottom mat</h2>
+          <div class="desc">Two-way mat, plan dimensions L × W.</div>
+          <div class="row">
+            <div class="field"><label>Length L (mm)</label><input type="number" id="footLength" value="1800"></div>
+            <div class="field"><label>Width W (mm)</label><input type="number" id="footWidth" value="1800"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="footCover" value="50"></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="footHook" checked><label>Add 90° end hooks (uses hook length above)</label></div>
+          <div class="diagram"><svg id="footSvg" viewBox="0 0 220 220"></svg></div>
+
+          <div class="subhead">Bars running along L (spaced across W)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="footXDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="footXSpacing" value="150"></div>
+          </div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="footXCL">— <small>mm/pc</small></div><div class="formula" id="footXFormula"></div></div>
+
+          <div class="subhead">Bars running along W (spaced across L)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="footYDia"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>25</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="footYSpacing" value="150"></div>
+          </div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="footYCL">— <small>mm/pc</small></div><div class="formula" id="footYFormula"></div></div>
+        </div>
+
+        <div class="card">
+          <h2>Footing BBS summary</h2>
+          <div class="ref-table"><table id="footBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Footing total</td><td class="tot" id="footGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="foot">⭳ Save Footing PDF</button>
+        </div>
+      </section>
+
+      <!-- SLAB TAB -->
+      <section class="tabpanel" data-tab="slab" id="slabTab" style="--tone:var(--c-slab)">
+        <div class="card">
+          <h2>Slab — bottom steel</h2>
+          <div class="desc">One panel, clear spans Lx (shorter) × Ly (longer). Top/negative steel at supports is moment-dependent — take from design drawings.</div>
+          <div class="row">
+            <div class="field"><label>Lx, shorter (m)</label><input type="number" id="slabLx" value="3.5" step="0.05"></div>
+            <div class="field"><label>Ly, longer (m)</label><input type="number" id="slabLy" value="4.5" step="0.05"></div>
+            <div class="field"><label>Cover (mm)</label><input type="number" id="slabCover" value="20"></div>
+          </div>
+          <div class="diagram"><svg id="slabSvg" viewBox="0 0 220 220"></svg></div>
+
+          <div class="subhead">Main bars (span Lx, along shorter direction)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="slabMainDia"><option selected>8</option><option>10</option><option>12</option><option>16</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="slabMainSpacing" value="150"></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="slabMainAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="slabMainCL">— <small>mm/pc</small></div><div class="formula" id="slabMainFormula"></div></div>
+
+          <div class="subhead">Distribution bars (span Ly, perpendicular)</div>
+          <div class="row">
+            <div class="field"><label>Dia</label><select id="slabDistDia"><option selected>8</option><option>10</option><option>12</option></select></div>
+            <div class="field"><label>Spacing c/c (mm)</label><input type="number" id="slabDistSpacing" value="200"></div>
+          </div>
+          <div class="checkline"><input type="checkbox" id="slabDistAnchor" checked><label>Add Ld anchorage each end</label></div>
+          <div class="outline"><div class="lbl">Cutting length</div><div class="val" id="slabDistCL">— <small>mm/pc</small></div><div class="formula" id="slabDistFormula"></div></div>
+        </div>
+
+        <div class="card">
+          <h2>Slab BBS summary</h2>
+          <div class="ref-table"><table id="slabBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Slab total</td><td class="tot" id="slabGrandTotal">—</td></tr></tfoot></table></div>
+          <button class="btn-tab-pdf" data-tab="slab">⭳ Save Slab PDF</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="note">
+    Formulas follow common IS 2502 / IS 456:2000 / SP 34(S&amp;T):1987 site practice. Hook/bend constants and lap category vary slightly between consultants — adjust the Advanced settings and Lap multiplier to match your project's approved BBS standard. Always cross-check final cutting lengths against structural drawings before cutting steel.
+  </div>
+</div>
+
+<!-- CREATE PROJECT MODAL (shown on first launch / no active project) -->
+<div class="modal-overlay hidden" id="createProjectModal">
+  <div class="modal-sheet">
+    <h2>New Project</h2>
+    <div class="desc">Give this job a name before you start calculating — everything you save will be filed under it.</div>
+    <div class="field" style="margin-bottom:10px;">
+      <label>Project / Building name</label>
+      <input type="text" id="newProjName" placeholder="e.g. Sharma Residence">
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Site / location (optional)</label>
+      <input type="text" id="newProjLocation" placeholder="e.g. Plot 12, Sector 9">
+    </div>
+    <button class="btn-primary" onclick="createProject()">Create Project</button>
+  </div>
+</div>
+
+<!-- PROJECTS PANEL -->
+<div class="modal-overlay hidden" id="projectsPanel">
+  <div class="modal-sheet">
+    <button class="modal-close" onclick="closeProjectsPanel()">×</button>
+    <h2>My Projects</h2>
+    <div class="desc">Switch projects, save the current tab as a member, and view the combined summary.</div>
+    <div class="store-chip" id="storeChip"></div>
+    <div class="storage-banner" id="storageBanner">⚠ Local storage isn't persisting in this view. A backup copy is attempted automatically, but tap "Backup all" below so you never lose data. If this is the installed app: make sure the HTML is loaded from the app's private file storage rather than a read-only bundled asset — some Android WebViews don't keep site data for asset:// pages between launches.</div>
+
+    <div class="proj-switch-row">
+      <select id="projSwitcher" onchange="switchProject(this.value)"></select>
+      <button class="btn-secondary" onclick="showCreateProjectModal(false)">+ New</button>
+    </div>
+
+    <div class="member-form">
+      <div class="row" style="margin-bottom:8px;">
+        <div class="field"><label>Member name/no.</label><input type="text" id="memberName" placeholder="e.g. B1, C1, F1"></div>
+        <div class="field"><label>No. of members</label><input type="number" id="memberQty" value="1" min="1"></div>
+      </div>
+      <div class="note" style="padding:0 0 8px;">Saves the currently open tab's BBS (<span id="memberTabLabel">Beam</span>) as one member entry, multiplied by the quantity above.</div>
+      <button class="btn-primary" onclick="saveMember()">Save current tab as member</button>
+    </div>
+
+    <div id="memberListWrap"></div>
+
+    <div class="summary-total">
+      <div class="lbl" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:ui-monospace,monospace;">Project summary total</div>
+      <div class="num" id="projSummaryTotal">0.0 kg</div>
+    </div>
+
+    <div class="row" style="margin-top:14px;">
+      <button class="btn-secondary" style="flex:1;" id="shareProjBtn">⭳ Export Project PDF</button>
+      <button class="btn-secondary" style="flex:1;color:#E05A4A;" onclick="deleteCurrentProject()">Delete project</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn-secondary" style="flex:1;" onclick="exportBackup()">⭳ Backup all (.json)</button>
+      <label class="btn-secondary" style="flex:1;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        ⭱ Restore backup
+        <input type="file" accept="application/json" id="restoreFileInput" style="display:none;">
+      </label>
+    </div>
+  </div>
+</div>
+
+<div class="bar">
+  <div><div class="lbl">Total steel, all elements</div><div class="val" id="grandWeightBar">0.0 kg</div></div>
+  <button id="shareMainBtn">Save PDF</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const tauPlain = {20:1.2, 25:1.4, 30:1.5, 35:1.7, 40:1.9};
+const deformedFactor = 1.6;
+const commonDias = [8,10,12,16,20,25,32];
+const elementTotals = {beam:0, col:0, foot:0, slab:0};
+const elementRows = {beam:[], col:[], foot:[], slab:[]};
+const TAB_ORDER = ['beam','col','foot','slab'];
+const TAB_COLORS = {beam:[255,122,41], col:[95,168,211], foot:[111,207,151], slab:[199,146,234]};
+
+function ldFor(dia, concreteGrade, steelGrade){
+  const tauD = tauPlain[concreteGrade] * deformedFactor;
+  const sigmaS = 0.87 * steelGrade;
+  return {ld: (dia * sigmaS) / (4 * tauD), tauD};
+}
+function unitWeight(dia){ return (dia*dia)/162; }
+function fmt(n, d=0){ return isFinite(n) ? n.toLocaleString('en-IN', {maximumFractionDigits:d, minimumFractionDigits:d}) : '—'; }
+function tabLabel(key){ return {beam:'Beam', col:'Column', foot:'Footing', slab:'Slab'}[key] || key; }
+function tabHex(key){ return {beam:'#FF7A29', col:'#5FA8D3', foot:'#6FCF97', slab:'#C792EA'}[key] || '#8B93A0'; }
+
+function drawSection(svgId, b, D, cover, barDia, tone){
+  tone = tone || '#FF7A29';
+  const svg = $(svgId);
+  const maxW = 170, maxH = 170;
+  const scale = Math.min(maxW/b, maxH/D);
+  const w = b*scale, h = D*scale;
+  const x0 = (220-w)/2, y0 = (220-h)/2;
+  const c = cover*scale;
+  const r = Math.max(3, (barDia*scale)/2*1.7);
+  svg.innerHTML = `
+    <rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="none" stroke="#333941" stroke-width="1.5"/>
+    <rect x="${x0+c}" y="${y0+c}" width="${w-2*c}" height="${h-2*c}" fill="none" stroke="${tone}" stroke-width="2" rx="3"/>
+    <circle cx="${x0+c+r+1}" cy="${y0+c+r+1}" r="${r}" fill="#5FA8D3"/>
+    <circle cx="${x0+w-c-r-1}" cy="${y0+c+r+1}" r="${r}" fill="#5FA8D3"/>
+    <circle cx="${x0+c+r+1}" cy="${y0+h-c-r-1}" r="${r}" fill="#6FCF97"/>
+    <circle cx="${x0+w-c-r-1}" cy="${y0+h-c-r-1}" r="${r}" fill="#6FCF97"/>
+    <text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle">${b} mm</text>
+    <text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${D} mm</text>
+  `;
+}
+
+function drawPlan(svgId, L, W, nX, nY){
+  const svg = $(svgId);
+  const maxW = 170, maxH = 170;
+  const scale = Math.min(maxW/L, maxH/W);
+  const w = L*scale, h = W*scale;
+  const x0 = (220-w)/2, y0 = (220-h)/2;
+  nX = Math.max(2, Math.min(nX, 9));
+  nY = Math.max(2, Math.min(nY, 9));
+  let lines = `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="none" stroke="#333941" stroke-width="1.5"/>`;
+  for(let i=0;i<nY;i++){
+    const y = y0 + (h/(nY-1||1))*i;
+    lines += `<line x1="${x0}" y1="${y}" x2="${x0+w}" y2="${y}" stroke="#5FA8D3" stroke-width="1.2" opacity="0.75"/>`;
+  }
+  for(let i=0;i<nX;i++){
+    const x = x0 + (w/(nX-1||1))*i;
+    lines += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y0+h}" stroke="#6FCF97" stroke-width="1.2" opacity="0.75"/>`;
+  }
+  lines += `<text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle">${L} mm</text>`;
+  lines += `<text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${W} mm</text>`;
+  svg.innerHTML = lines;
+}
+
+function renderBbs(tableId, totalId, rows, key){
+  if(key) elementRows[key] = rows;
+  const tbody = $(tableId).querySelector('tbody');
+  tbody.innerHTML = '';
+  let grand = 0;
+  rows.forEach((r,i)=>{
+    grand += r.wt;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td>${r.shape||r.mark}</td><td>${r.qty}</td><td>${r.dia}mm</td><td>${r.spacing?r.spacing+'mm':'—'}</td><td>${fmt(r.length)}</td><td>${fmt(r.totalM,1)}</td><td class="tot">${fmt(r.wt,1)}</td>`;
+    tbody.appendChild(tr);
+  });
+  $(totalId).textContent = fmt(grand,1)+' kg';
+  return grand;
+}
+
+function buildReportText(){
+  const labels = {beam:'BEAM', col:'COLUMN', foot:'FOOTING', slab:'SLAB'};
+  let out = 'REBAR BBS — ' + new Date().toLocaleDateString('en-IN') + '\n';
+  out += 'IS 2502 / IS 456:2000 / SP 34(S&T)\n';
+  out += '='.repeat(40) + '\n';
+  let grand = 0;
+  TAB_ORDER.forEach(key=>{
+    const rows = elementRows[key];
+    if(!rows || !rows.length) return;
+    out += '\n' + labels[key] + '\n' + '-'.repeat(40) + '\n';
+    rows.forEach((r,i)=>{
+      out += `${i+1}. ${r.shape||r.mark} | ${r.dia}mm | Qty:${r.qty}`;
+      if(r.spacing) out += ` | @${r.spacing}mm c/c`;
+      out += ` | ${fmt(r.length)}mm x${r.qty} = ${fmt(r.totalM,1)}m | ${fmt(r.wt,1)}kg\n`;
+    });
+    out += `${labels[key]} TOTAL: ${fmt(elementTotals[key],1)} kg\n`;
+    grand += elementTotals[key];
+  });
+  out += '\n' + '='.repeat(40) + '\n';
+  out += `GRAND TOTAL, ALL ELEMENTS: ${fmt(grand,1)} kg\n`;
+  return out;
+}
+
+function buildElementReportText(key){
+  const labels = {beam:'BEAM', col:'COLUMN', foot:'FOOTING', slab:'SLAB'};
+  const rows = elementRows[key] || [];
+  let out = `${labels[key]} — REBAR BBS — ` + new Date().toLocaleDateString('en-IN') + '\n' + '='.repeat(40) + '\n';
+  rows.forEach((r,i)=>{
+    out += `${i+1}. ${r.shape||r.mark} | ${r.dia}mm | Qty:${r.qty}`;
+    if(r.spacing) out += ` | @${r.spacing}mm c/c`;
+    out += ` | ${fmt(r.length)}mm x${r.qty} = ${fmt(r.totalM,1)}m | ${fmt(r.wt,1)}kg\n`;
+  });
+  out += '='.repeat(40) + `\n${labels[key]} TOTAL: ${fmt(elementTotals[key],1)} kg\n`;
+  return out;
+}
+
+function buildProjectSummaryText(){
+  const proj = getCurrentProject();
+  if(!proj) return '';
+  let out = `PROJECT: ${proj.name}\n`;
+  if(proj.location) out += `LOCATION: ${proj.location}\n`;
+  out += `IS 2502 / IS 456:2000 / SP 34(S&T)\n` + '='.repeat(40) + '\n';
+  if(!proj.members.length) out += '(no members saved yet)\n';
+  proj.members.forEach((m,i)=>{
+    out += `${i+1}. ${m.name} (${tabLabel(m.element)}) x${m.qty} — ${fmt(m.unitWt,1)}kg each = ${fmt(m.totalWt,1)}kg\n`;
+  });
+  const total = proj.members.reduce((s,m)=>s+m.totalWt,0);
+  out += '='.repeat(40) + `\nPROJECT TOTAL STEEL: ${fmt(total,1)} kg\n`;
+  return out;
+}
+
+function updateStickyBar(){
+  const g = elementTotals.beam+elementTotals.col+elementTotals.foot+elementTotals.slab;
+  $('grandWeightBar').textContent = fmt(g,1)+' kg';
+}
+
+let ldMap = {};
+
+function recalcGlobal(){
+  const concreteGrade = parseInt($('concreteGrade').value);
+  const steelGrade = parseFloat($('steelGrade').value);
+  const lapMult = parseFloat($('lapMult').value);
+  const tbody = $('ldTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  ldMap = {};
+  commonDias.forEach(dia=>{
+    const {ld, tauD} = ldFor(dia, concreteGrade, steelGrade);
+    ldMap[dia] = ld;
+    const lap = ld*lapMult;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${dia}</td><td>${tauD.toFixed(2)}</td><td>${fmt(ld)}</td><td>${fmt(ld/dia,1)}φ</td><td>${fmt(lap)}</td><td>${50*dia}</td>`;
+    tbody.appendChild(tr);
+  });
+  return {concreteGrade, steelGrade, lapMult};
+}
+
+function recalcBeam(hookMult, bendMult){
+  const b = parseFloat($('beamWidth').value)||0, D = parseFloat($('beamDepth').value)||0;
+  const cover = parseFloat($('beamCover').value)||0;
+  const spanM = parseFloat($('beamSpan').value)||0;
+  const stDia = parseFloat($('beamStirrupDia').value);
+  const spacing = parseFloat($('beamStirrupSpacing').value)||150;
+  const botDia = parseFloat($('beamBotDia').value);
+  drawSection('beamSvg', b, D, cover, botDia, tabHex('beam'));
+
+  const A = b-2*cover, B = D-2*cover;
+  const hookLen = hookMult*stDia, deduction = bendMult*stDia;
+  const stirrupCL = 2*(A+B) + 2*hookLen - deduction;
+  $('beamStirrupCL').innerHTML = `${fmt(stirrupCL)} <small>mm/pc</small>`;
+  $('beamStirrupFormula').textContent = `2×(${fmt(A)}+${fmt(B)}) + 2×(${hookMult}×${stDia}) − ${bendMult}×${stDia}`;
+  const nStirrups = Math.ceil((spanM*1000)/spacing)+1;
+  $('beamStirrupCount').textContent = nStirrups;
+  const stirrupTotalM = (stirrupCL*nStirrups)/1000;
+  const stirrupWt = stirrupTotalM*unitWeight(stDia);
+  $('beamStirrupWeight').textContent = fmt(stirrupWt,1)+' kg';
+
+  function mainBar(prefix){
+    const qty = parseFloat($(prefix+'Qty').value)||0;
+    const dia = parseFloat($(prefix+'Dia').value);
+    const type = $(prefix+'Type').value;
+    const anchorOn = $(prefix+'Anchor').checked;
+    const ld = ldMap[dia] || 0;
+    const anchor = anchorOn ? ld : 0;
+    let length = spanM*1000 + 2*anchor;
+    let formula = `${fmt(spanM*1000)} + 2×${anchorOn?fmt(ld)+' (Ld)':'0'}`;
+    if(type==='cranked'){
+      const angle = parseFloat($(prefix+'Angle').value);
+      const rise = Math.max(D-2*cover-dia, 0);
+      const factor = angle===45?0.42:0.27;
+      length += 2*factor*rise;
+      formula += ` + 2×${factor}×${fmt(rise)} (crank @ ${angle}°)`;
+    }
+    $(prefix+'CL').innerHTML = `${fmt(length)} <small>mm</small>`;
+    $(prefix+'Formula').textContent = formula;
+    const totalM = (length*qty)/1000;
+    const posLabel = prefix==='beamBot'?'Bottom main':'Top main';
+    const shape = type==='cranked' ? `${posLabel} — Cranked` : `${posLabel} — Straight`;
+    return {mark: posLabel, shape, dia, length, qty, spacing:null, totalM, wt: totalM*unitWeight(dia)};
+  }
+  const botRow = mainBar('beamBot'), topRow = mainBar('beamTop');
+  const rows = [{mark:'Stirrup', shape:'Rectangular stirrup', dia:stDia, length:stirrupCL, qty:nStirrups, spacing, totalM:stirrupTotalM, wt:stirrupWt}, botRow, topRow].filter(r=>r.qty>0);
+  elementTotals.beam = renderBbs('beamBbsTable','beamGrandTotal', rows, 'beam');
+}
+
+function recalcColumn(hookMult, bendMult, lapMult){
+  const b = parseFloat($('colWidth').value)||0, D = parseFloat($('colDepth').value)||0;
+  const cover = parseFloat($('colCover').value)||0;
+  const heightM = parseFloat($('colHeight').value)||0;
+  const tieDia = parseFloat($('colTieDia').value);
+  const spacing = parseFloat($('colTieSpacing').value)||150;
+  const mainDia = parseFloat($('colMainDia').value);
+  drawSection('colSvg', b, D, cover, mainDia, tabHex('col'));
+
+  const A = b-2*cover, B = D-2*cover;
+  const hookLen = hookMult*tieDia, deduction = bendMult*tieDia;
+  const tieCL = 2*(A+B) + 2*hookLen - deduction;
+  $('colTieCL').innerHTML = `${fmt(tieCL)} <small>mm/pc</small>`;
+  $('colTieFormula').textContent = `2×(${fmt(A)}+${fmt(B)}) + 2×(${hookMult}×${tieDia}) − ${bendMult}×${tieDia}`;
+  const nTies = Math.ceil((heightM*1000)/spacing)+1;
+  $('colTieCount').textContent = nTies;
+  const tieTotalM = (tieCL*nTies)/1000;
+  const tieWt = tieTotalM*unitWeight(tieDia);
+  $('colTieWeight').textContent = fmt(tieWt,1)+' kg';
+
+  const qty = parseFloat($('colMainQty').value)||0;
+  const spliceOn = $('colSplice').checked;
+  const lap = spliceOn ? (ldMap[mainDia]||0)*lapMult : 0;
+  const mainLength = heightM*1000 + lap;
+  $('colMainCL').innerHTML = `${fmt(mainLength)} <small>mm</small>`;
+  $('colMainFormula').textContent = `${fmt(heightM*1000)} + ${spliceOn?fmt(lap)+' (lap)':'0'}`;
+  const mainTotalM = (mainLength*qty)/1000;
+  const mainWt = mainTotalM*unitWeight(mainDia);
+
+  const rows = [
+    {mark:'Tie', shape:'Rectangular tie', dia:tieDia, length:tieCL, qty:nTies, spacing, totalM:tieTotalM, wt:tieWt},
+    {mark:'Main vertical', shape:spliceOn?'Straight — with lap':'Straight', dia:mainDia, length:mainLength, qty, spacing:null, totalM:mainTotalM, wt:mainWt}
+  ].filter(r=>r.qty>0);
+  elementTotals.col = renderBbs('colBbsTable','colGrandTotal', rows, 'col');
+}
+
+function recalcFooting(hookMult){
+  const L = parseFloat($('footLength').value)||0, W = parseFloat($('footWidth').value)||0;
+  const cover = parseFloat($('footCover').value)||0;
+  const hookOn = $('footHook').checked;
+  const xDia = parseFloat($('footXDia').value), xSpacing = parseFloat($('footXSpacing').value)||150;
+  const yDia = parseFloat($('footYDia').value), ySpacing = parseFloat($('footYSpacing').value)||150;
+
+  const xQty = Math.ceil((W-2*cover)/xSpacing)+1;
+  const yQty = Math.ceil((L-2*cover)/ySpacing)+1;
+  drawPlan('footSvg', L, W, xQty, yQty);
+
+  const xHook = hookOn ? 2*hookMult*xDia : 0;
+  const xCL = L - 2*cover + xHook;
+  $('footXCL').innerHTML = `${fmt(xCL)} <small>mm/pc</small>`;
+  $('footXFormula').textContent = `${fmt(L)} − 2×${cover} ${hookOn?`+ 2×${hookMult}×${xDia}`:''}`;
+  const xTotalM = (xCL*xQty)/1000;
+
+  const yHook = hookOn ? 2*hookMult*yDia : 0;
+  const yCL = W - 2*cover + yHook;
+  $('footYCL').innerHTML = `${fmt(yCL)} <small>mm/pc</small>`;
+  $('footYFormula').textContent = `${fmt(W)} − 2×${cover} ${hookOn?`+ 2×${hookMult}×${yDia}`:''}`;
+  const yTotalM = (yCL*yQty)/1000;
+
+  const rows = [
+    {mark:'Along L (dir-1)', shape:hookOn?'Straight — 90° hooks':'Straight', dia:xDia, length:xCL, qty:xQty, spacing:xSpacing, totalM:xTotalM, wt:xTotalM*unitWeight(xDia)},
+    {mark:'Along W (dir-2)', shape:hookOn?'Straight — 90° hooks':'Straight', dia:yDia, length:yCL, qty:yQty, spacing:ySpacing, totalM:yTotalM, wt:yTotalM*unitWeight(yDia)}
+  ];
+  elementTotals.foot = renderBbs('footBbsTable','footGrandTotal', rows, 'foot');
+}
+
+function recalcSlab(){
+  const LxM = parseFloat($('slabLx').value)||0, LyM = parseFloat($('slabLy').value)||0;
+  const cover = parseFloat($('slabCover').value)||0;
+  const mainDia = parseFloat($('slabMainDia').value), mainSpacing = parseFloat($('slabMainSpacing').value)||150;
+  const distDia = parseFloat($('slabDistDia').value), distSpacing = parseFloat($('slabDistSpacing').value)||200;
+  const mainAnchor = $('slabMainAnchor').checked, distAnchor = $('slabDistAnchor').checked;
+
+  const mainQty = Math.ceil((LyM*1000)/mainSpacing)+1;
+  const distQty = Math.ceil((LxM*1000)/distSpacing)+1;
+  drawPlan('slabSvg', LxM*1000, LyM*1000, distQty, mainQty);
+
+  const mainLd = mainAnchor ? (ldMap[mainDia]||0) : 0;
+  const mainCL = LxM*1000 + 2*mainLd;
+  $('slabMainCL').innerHTML = `${fmt(mainCL)} <small>mm/pc</small>`;
+  $('slabMainFormula').textContent = `${fmt(LxM*1000)} + 2×${mainAnchor?fmt(mainLd)+' (Ld)':'0'}`;
+  const mainTotalM = (mainCL*mainQty)/1000;
+
+  const distLd = distAnchor ? (ldMap[distDia]||0) : 0;
+  const distCL = LyM*1000 + 2*distLd;
+  $('slabDistCL').innerHTML = `${fmt(distCL)} <small>mm/pc</small>`;
+  $('slabDistFormula').textContent = `${fmt(LyM*1000)} + 2×${distAnchor?fmt(distLd)+' (Ld)':'0'}`;
+  const distTotalM = (distCL*distQty)/1000;
+
+  const rows = [
+    {mark:'Main (Lx)', shape:'Straight', dia:mainDia, length:mainCL, qty:mainQty, spacing:mainSpacing, totalM:mainTotalM, wt:mainTotalM*unitWeight(mainDia)},
+    {mark:'Distribution (Ly)', shape:'Straight', dia:distDia, length:distCL, qty:distQty, spacing:distSpacing, totalM:distTotalM, wt:distTotalM*unitWeight(distDia)}
+  ];
+  elementTotals.slab = renderBbs('slabBbsTable','slabGrandTotal', rows, 'slab');
+}
+
+function recalcAll(){
+  const g = recalcGlobal();
+  const hookMult = parseFloat($('hookMult').value)||9;
+  const bendMult = parseFloat($('bendMult').value)||6;
+  recalcBeam(hookMult, bendMult);
+  recalcColumn(hookMult, bendMult, g.lapMult);
+  recalcFooting(hookMult);
+  recalcSlab();
+  updateStickyBar();
+  measureAndSetHeight();
+}
+
+// ===================== SWIPEABLE, COLORED TAB CAROUSEL =====================
+let activeTabIndex = 0;
+const tabViewport = $('tabViewport');
+const tabTrack = $('tabTrack');
+
+function setActiveTabButton(key){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===key));
+}
+
+function measureAndSetHeight(){
+  if(!tabViewport) return;
+  const panels = document.querySelectorAll('.tabpanel');
+  const panel = panels[activeTabIndex];
+  if(panel) tabViewport.style.height = panel.scrollHeight + 'px';
+}
+
+function goToTabIndex(idx){
+  idx = Math.max(0, Math.min(TAB_ORDER.length-1, idx));
+  activeTabIndex = idx;
+  const key = TAB_ORDER[idx];
+  tabTrack.style.transform = `translateX(-${idx*25}%)`;
+  setActiveTabButton(key);
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.toggle('active', p.dataset.tab===key));
+  const memberTabLabel = $('memberTabLabel');
+  if(memberTabLabel) memberTabLabel.textContent = tabLabel(key);
+  measureAndSetHeight();
+}
+
+document.querySelectorAll('.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    goToTabIndex(TAB_ORDER.indexOf(btn.dataset.tab));
+  });
+});
+
+// live finger-drag horizontal swipe between tabs
+let dragState = null;
+if(tabViewport){
+  tabViewport.addEventListener('touchstart', e=>{
+    const t = e.touches[0];
+    dragState = {x0:t.clientX, y0:t.clientY, dx:0, locked:null};
+    tabTrack.style.transition = 'none';
+  }, {passive:true});
+
+  tabViewport.addEventListener('touchmove', e=>{
+    if(!dragState) return;
+    const t = e.touches[0];
+    const dx = t.clientX - dragState.x0, dy = t.clientY - dragState.y0;
+    if(dragState.locked===null && (Math.abs(dx)>8 || Math.abs(dy)>8)){
+      dragState.locked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    }
+    if(dragState.locked==='h'){
+      e.preventDefault();
+      dragState.dx = dx;
+      const vw = tabViewport.clientWidth || 1;
+      let percent = activeTabIndex*25 - (dx/vw)*100;
+      const maxPercent = (TAB_ORDER.length-1)*25;
+      percent = Math.max(-8, Math.min(maxPercent+8, percent));
+      tabTrack.style.transform = `translateX(-${percent}%)`;
+    }
+  }, {passive:false});
+
+  function endDrag(){
+    if(!dragState) return;
+    tabTrack.style.transition = '';
+    if(dragState.locked==='h'){
+      const vw = tabViewport.clientWidth || 1;
+      const threshold = vw*0.16;
+      if(dragState.dx <= -threshold && activeTabIndex < TAB_ORDER.length-1) goToTabIndex(activeTabIndex+1);
+      else if(dragState.dx >= threshold && activeTabIndex > 0) goToTabIndex(activeTabIndex-1);
+      else goToTabIndex(activeTabIndex);
+    }
+    dragState = null;
+  }
+  tabViewport.addEventListener('touchend', endDrag);
+  tabViewport.addEventListener('touchcancel', endDrag);
+}
+
+['beamBotType','beamTopType'].forEach(id=>{
+  $(id).addEventListener('change', e=>{
+    $(id.replace('Type','AngleField')).style.display = e.target.value==='cranked' ? '' : 'none';
+    recalcAll();
+  });
+});
+
+document.querySelectorAll('input, select').forEach(el=>{
+  el.addEventListener('input', recalcAll);
+  el.addEventListener('change', recalcAll);
+});
+
+document.querySelectorAll('details.adv').forEach(d=>{
+  d.addEventListener('toggle', measureAndSetHeight);
+});
+
+window.addEventListener('resize', ()=>measureAndSetHeight());
+
+// ===================== TOAST FEEDBACK =====================
+let toastTimer = null;
+function toast(msg, type){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2600);
+}
+
+// ===================== STORAGE LAYER (verified localStorage + IndexedDB shadow backup) =====================
+// Wraps localStorage with a write-then-read verification pass. If the host
+// WebView blocks or silently drops storage, we fall back to an in-memory
+// store for the session, surface a visible banner, AND shadow-copy every
+// save into IndexedDB (a separate, often more reliable, storage engine in
+// embedded WebViews) so a fresh launch can recover data localStorage lost.
+const Store = (function(){
+  let persistent = true;
+  const memory = {};
+
+  function testPersistence(){
+    try{
+      const testKey = '__bbs_storage_test__';
+      localStorage.setItem(testKey, '1');
+      const ok = localStorage.getItem(testKey) === '1';
+      localStorage.removeItem(testKey);
+      return ok;
+    }catch(e){ return false; }
+  }
+  persistent = testPersistence();
+
+  return {
+    isPersistent(){ return persistent; },
+    get(key){
+      if(persistent){
+        try{ return localStorage.getItem(key); }catch(e){ persistent = false; }
+      }
+      return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : null;
+    },
+    set(key, value){
+      memory[key] = value; // always mirror to memory so current session never loses data
+      if(persistent){
+        try{
+          localStorage.setItem(key, value);
+          if(localStorage.getItem(key) !== value){ persistent = false; }
+        }catch(e){ persistent = false; }
+      }
+      return persistent;
+    }
+  };
+})();
+
+const IDB = (function(){
+  const DB_NAME = 'bbsCalcBackup', STORE = 'kv', VERSION = 1;
+  let dbPromise = null;
+  function open(){
+    if(dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve, reject)=>{
+      if(!window.indexedDB){ reject('no-idb'); return; }
+      const req = indexedDB.open(DB_NAME, VERSION);
+      req.onupgradeneeded = ()=>{ req.result.createObjectStore(STORE); };
+      req.onsuccess = ()=> resolve(req.result);
+      req.onerror = ()=> reject(req.error);
+    });
+    return dbPromise;
+  }
+  return {
+    async set(key, value){
+      try{
+        const db = await open();
+        return new Promise(resolve=>{
+          const tx = db.transaction(STORE,'readwrite');
+          tx.objectStore(STORE).put(value, key);
+          tx.oncomplete = ()=>resolve(true);
+          tx.onerror = ()=>resolve(false);
+        });
+      }catch(e){ return false; }
+    },
+    async get(key){
+      try{
+        const db = await open();
+        return new Promise(resolve=>{
+          const tx = db.transaction(STORE,'readonly');
+          const req = tx.objectStore(STORE).get(key);
+          req.onsuccess = ()=>resolve(req.result === undefined ? null : req.result);
+          req.onerror = ()=>resolve(null);
+        });
+      }catch(e){ return null; }
+    }
+  };
+})();
+
+function updateStorageBanner(){
+  const banner = $('storageBanner');
+  const chip = $('storeChip');
+  if(Store.isPersistent()){
+    banner.classList.remove('show');
+    if(chip) chip.innerHTML = '<span class="dot" style="background:var(--good)"></span> Saved on this device';
+  } else {
+    banner.classList.add('show');
+    if(chip) chip.innerHTML = '<span class="dot" style="background:#E0A54A"></span> Session only — back it up below';
+  }
+}
+
+// ===================== PROJECTS DATA =====================
+const PROJ_KEY = 'bbsProjects';
+const CUR_KEY = 'bbsCurrentProjectId';
+
+function shadowBackup(){
+  IDB.set(PROJ_KEY, loadProjects());
+  IDB.set(CUR_KEY, getCurrentProjectId());
+}
+
+async function tryRestoreFromShadow(){
+  const local = loadProjects();
+  if(local.length) return false;
+  const backup = await IDB.get(PROJ_KEY);
+  if(backup && backup.length){
+    saveProjects(backup);
+    const curBackup = await IDB.get(CUR_KEY);
+    if(curBackup) setCurrentProjectId(curBackup);
+    else setCurrentProjectId(backup[0].id);
+    return true;
+  }
+  return false;
+}
+
+function loadProjects(){
+  try{
+    const raw = Store.get(PROJ_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveProjects(list){
+  const ok = Store.set(PROJ_KEY, JSON.stringify(list));
+  updateStorageBanner();
+  shadowBackup();
+  return ok;
+}
+function getCurrentProjectId(){
+  return Store.get(CUR_KEY);
+}
+function setCurrentProjectId(id){
+  Store.set(CUR_KEY, id);
+  shadowBackup();
+}
+function getCurrentProject(){
+  const id = getCurrentProjectId();
+  if(!id) return null;
+  return loadProjects().find(p=>p.id===id) || null;
+}
+function activeTabKey(){
+  return TAB_ORDER[activeTabIndex] || 'beam';
+}
+
+function updateProjectBadge(){
+  const proj = getCurrentProject();
+  const badge = $('projMemberBadge');
+  if(badge) badge.textContent = proj ? proj.members.length : 0;
+}
+
+function showCreateProjectModal(blocking){
+  $('createProjectModal').classList.remove('hidden');
+  $('createProjectModal').dataset.blocking = blocking ? '1' : '0';
+  $('newProjName').value = '';
+  $('newProjLocation').value = '';
+  setTimeout(()=>$('newProjName').focus(), 50);
+}
+
+function createProject(){
+  const nameEl = $('newProjName');
+  const name = nameEl.value.trim();
+  if(!name){
+    nameEl.style.borderColor = '#E05A4A';
+    toast('Enter a project name to continue', 'warn');
+    nameEl.focus();
+    return;
+  }
+  nameEl.style.borderColor = '';
+  const location = $('newProjLocation').value.trim();
+  const list = loadProjects();
+  const id = 'p_' + Date.now();
+  list.push({id, name, location, createdAt: new Date().toISOString(), members: []});
+  const ok = saveProjects(list);
+  setCurrentProjectId(id);
+  $('createProjectModal').classList.add('hidden');
+  renderProjectSwitcher();
+  renderMemberList();
+  toast(ok ? `Project "${name}" created` : `Project created (session only — see warning)`, ok ? 'good' : 'warn');
+}
+
+function openProjectsPanel(){
+  if(!getCurrentProject()){
+    showCreateProjectModal(false);
+    return;
+  }
+  updateStorageBanner();
+  renderProjectSwitcher();
+  renderMemberList();
+  $('memberTabLabel').textContent = tabLabel(activeTabKey());
+  $('projectsPanel').classList.remove('hidden');
+}
+function closeProjectsPanel(){
+  $('projectsPanel').classList.add('hidden');
+}
+
+function renderProjectSwitcher(){
+  const sel = $('projSwitcher');
+  const list = loadProjects();
+  const curId = getCurrentProjectId();
+  sel.innerHTML = list.map(p=>`<option value="${p.id}" ${p.id===curId?'selected':''}>${p.name}</option>`).join('');
+}
+function switchProject(id){
+  setCurrentProjectId(id);
+  renderMemberList();
+  const p = getCurrentProject();
+  if(p) toast(`Switched to "${p.name}"`);
+}
+
+function saveMember(){
+  const proj = getCurrentProject();
+  if(!proj){ toast('Create a project first', 'warn'); return; }
+  const name = $('memberName').value.trim() || tabLabel(activeTabKey());
+  const qty = parseInt($('memberQty').value) || 1;
+  const tabKey = activeTabKey();
+  const unitWt = elementTotals[tabKey] || 0;
+  if(!unitWt){
+    toast('Nothing calculated on this tab yet', 'warn');
+    return;
+  }
+  const rowsSnapshot = (elementRows[tabKey] || []).map(r=>({...r}));
+  const list = loadProjects();
+  const p = list.find(x=>x.id===proj.id);
+  p.members.push({
+    id: 'm_' + Date.now(),
+    name, qty, element: tabKey,
+    unitWt, totalWt: unitWt*qty,
+    rows: rowsSnapshot,
+    savedAt: new Date().toISOString()
+  });
+  const ok = saveProjects(list);
+  $('memberName').value = '';
+  $('memberQty').value = 1;
+  renderMemberList();
+  toast(ok ? `Saved "${name}" (${fmt(unitWt*qty,1)} kg)` : `Saved for this session only`, ok ? 'good' : 'warn');
+}
+
+function deleteMember(memberId){
+  const proj = getCurrentProject();
+  if(!proj) return;
+  const list = loadProjects();
+  const p = list.find(x=>x.id===proj.id);
+  p.members = p.members.filter(m=>m.id!==memberId);
+  saveProjects(list);
+  renderMemberList();
+  toast('Member removed');
+}
+
+function renderMemberList(){
+  const proj = getCurrentProject();
+  const wrap = $('memberListWrap');
+  updateProjectBadge();
+  if(!proj){ wrap.innerHTML=''; $('projSummaryTotal').textContent='0.0 kg'; return; }
+  if(!proj.members.length){
+    wrap.innerHTML = '<div class="note" style="padding:8px 0;">No members saved yet for this project.</div>';
+  } else {
+    const byTab = {};
+    proj.members.forEach(m=>{ byTab[m.element] = (byTab[m.element]||0) + m.totalWt; });
+    const chips = TAB_ORDER.filter(k=>byTab[k]).map(k=>`<span class="element-chip" style="border-color:${tabHex(k)};color:${tabHex(k)}">${tabLabel(k)} · ${fmt(byTab[k],1)}kg</span>`).join('');
+    wrap.innerHTML = `<div class="element-chip-row">${chips}</div>` + proj.members.map(m=>`
+      <div class="member-list-row">
+        <span><i class="dot" style="background:${tabHex(m.element)}"></i>${m.name} — ${tabLabel(m.element)} ×${m.qty}</span>
+        <span>${fmt(m.totalWt,1)}kg <button class="del" data-mid="${m.id}">✕</button></span>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.del').forEach(btn=>{
+      btn.addEventListener('click', ()=>deleteMember(btn.dataset.mid));
+    });
+  }
+  const total = proj.members.reduce((s,m)=>s+m.totalWt,0);
+  $('projSummaryTotal').textContent = fmt(total,1) + ' kg';
+}
+
+function deleteCurrentProject(){
+  const proj = getCurrentProject();
+  if(!proj) return;
+  if(!confirm(`Delete project "${proj.name}" and all its saved members? This can't be undone.`)) return;
+  let list = loadProjects().filter(p=>p.id!==proj.id);
+  saveProjects(list);
+  if(list.length){
+    setCurrentProjectId(list[0].id);
+    renderProjectSwitcher();
+    renderMemberList();
+    toast('Project deleted');
+  } else {
+    setCurrentProjectId('');
+    closeProjectsPanel();
+    showCreateProjectModal(true);
+  }
+}
+
+// ===================== BACKUP / RESTORE (.json — works regardless of WebView storage quirks) =====================
+function exportBackup(){
+  const data = { projects: loadProjects(), currentId: getCurrentProjectId(), exportedAt: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+    const blob = new Blob([json], {type:'application/json'});
+    const reader = new FileReader();
+    reader.onload = ()=>{ window.AppInventor.setWebViewString(reader.result); toast('Backup ready — Save from the share menu', 'good'); };
+    reader.readAsDataURL(blob);
+    return;
+  }
+  try{
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `bbs_backup_${Date.now()}.json`;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 3000);
+    toast('Backup file downloaded', 'good');
+  }catch(e){
+    toast('Could not create backup file on this device', 'warn');
+  }
+}
+function importBackup(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data || !Array.isArray(data.projects)) throw new Error('bad file');
+      saveProjects(data.projects);
+      if(data.currentId) setCurrentProjectId(data.currentId);
+      else if(data.projects[0]) setCurrentProjectId(data.projects[0].id);
+      renderProjectSwitcher(); renderMemberList();
+      toast('Backup restored', 'good');
+    }catch(e){
+      toast('That file could not be read as a backup', 'warn');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ===================== PDF GENERATION (jsPDF + autoTable) =====================
+function pdfAvailable(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+
+function newDoc(){
+  const { jsPDF } = window.jspdf;
+  return new jsPDF({unit:'mm', format:'a4'});
+}
+
+function pdfHeader(doc, title, subtitle){
+  doc.setFillColor(20,23,27);
+  doc.rect(0,0,210,26,'F');
+  doc.setTextColor(255,122,41);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.text('REBAR BBS CALCULATOR', 14, 12);
+  doc.setTextColor(230,230,225);
+  doc.setFontSize(10.5);
+  doc.setFont('helvetica','normal');
+  doc.text(title, 14, 19);
+  if(subtitle){ doc.setFontSize(8.5); doc.setTextColor(160,168,180); doc.text(subtitle, 14, 24); }
+  doc.setTextColor(0,0,0);
+}
+
+function pdfFooter(doc){
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFontSize(7.5);
+    doc.setTextColor(140,140,140);
+    doc.text(`IS 2502 / IS 456:2000 / SP 34(S&T) — generated ${new Date().toLocaleString('en-IN')}`, 14, 290);
+    doc.text(`Page ${i} of ${pageCount}`, 196, 290, {align:'right'});
+  }
+}
+
+function rowsToAutoTable(doc, startY, rows, title, tone){
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(tone[0],tone[1],tone[2]);
+  doc.text(title, 14, startY);
+  doc.autoTable({
+    startY: startY+3,
+    head:[['Sl','Shape','No.','Dia','Spacing','Cut.Len(mm)','Total(m)','Wt(kg)']],
+    body: rows.map((r,i)=>[i+1, r.shape||r.mark, r.qty, r.dia+'mm', r.spacing?r.spacing+'mm':'—', fmt(r.length), fmt(r.totalM,1), fmt(r.wt,1)]),
+    theme:'grid',
+    headStyles:{fillColor:[30,34,40], textColor:255, fontSize:8},
+    bodyStyles:{fontSize:8},
+    margin:{left:14,right:14}
+  });
+  return doc.lastAutoTable.finalY;
+}
+
+function deliverPDF(doc, filename){
+  try{
+    if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+      const dataUri = doc.output('datauristring');
+      window.AppInventor.setWebViewString(dataUri);
+      toast('PDF ready — use Save in the app menu', 'good');
+      return;
+    }
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 3000);
+    toast('PDF downloaded', 'good');
+  }catch(e){
+    toast('Could not generate PDF — sharing as text instead', 'warn');
+    deliverText(buildReportText(), 'BBS report');
+  }
+}
+
+function generateElementPDF(key){
+  const rows = elementRows[key] || [];
+  if(!rows.length){ toast('Nothing calculated on this tab yet', 'warn'); return; }
+  if(!pdfAvailable()){ deliverText(buildElementReportText(key), `${tabLabel(key)} report`); return; }
+  const doc = newDoc();
+  const proj = getCurrentProject();
+  pdfHeader(doc, `${tabLabel(key)} — Bar Bending Schedule`, proj ? `Project: ${proj.name}${proj.location?' · '+proj.location:''}` : '');
+  const y = rowsToAutoTable(doc, 34, rows, `${tabLabel(key)} elements`, TAB_COLORS[key]);
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(...TAB_COLORS[key]);
+  doc.text(`${tabLabel(key)} total steel: ${fmt(elementTotals[key],1)} kg`, 14, y+10);
+  pdfFooter(doc);
+  deliverPDF(doc, `${tabLabel(key)}_BBS_${Date.now()}.pdf`);
+}
+
+function generateFullCalcPDF(){
+  if(!pdfAvailable()){ deliverText(buildReportText(), 'Full BBS report'); return; }
+  const doc = newDoc();
+  const proj = getCurrentProject();
+  pdfHeader(doc, 'Full Calculation — All Elements', proj ? `Project: ${proj.name}${proj.location?' · '+proj.location:''}` : '');
+  let y = 34, grand = 0, any = false;
+  TAB_ORDER.forEach(key=>{
+    const rows = elementRows[key];
+    if(!rows || !rows.length) return;
+    any = true;
+    if(y > 250){ doc.addPage(); y = 20; }
+    y = rowsToAutoTable(doc, y, rows, tabLabel(key), TAB_COLORS[key]) + 10;
+    grand += elementTotals[key];
+  });
+  if(!any){ toast('Nothing calculated yet', 'warn'); return; }
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(111,207,151);
+  doc.text(`GRAND TOTAL, ALL ELEMENTS: ${fmt(grand,1)} kg`, 14, y);
+  pdfFooter(doc);
+  deliverPDF(doc, `BBS_FullCalc_${Date.now()}.pdf`);
+}
+
+function generateProjectPDF(){
+  const proj = getCurrentProject();
+  if(!proj){ toast('Create a project first', 'warn'); return; }
+  if(!pdfAvailable()){ deliverText(buildProjectSummaryText(), 'Project summary'); return; }
+  const doc = newDoc();
+  pdfHeader(doc, `Project Summary — ${proj.name}`, proj.location || '');
+  let y = 34;
+  if(!proj.members.length){
+    doc.setFontSize(10); doc.text('No members saved yet.', 14, y);
+  } else {
+    doc.autoTable({
+      startY:y,
+      head:[['#','Member','Element','Qty','Unit Wt (kg)','Total (kg)']],
+      body: proj.members.map((m,i)=>[i+1, m.name, tabLabel(m.element), m.qty, fmt(m.unitWt,1), fmt(m.totalWt,1)]),
+      theme:'grid',
+      headStyles:{fillColor:[30,34,40], textColor:255, fontSize:8.5},
+      bodyStyles:{fontSize:8.5},
+      margin:{left:14,right:14}
+    });
+    y = doc.lastAutoTable.finalY + 10;
+  }
+  const total = proj.members.reduce((s,m)=>s+m.totalWt,0);
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(255,122,41);
+  doc.text(`PROJECT TOTAL STEEL: ${fmt(total,1)} kg`, 14, y);
+
+  proj.members.forEach(m=>{
+    if(!m.rows || !m.rows.length) return;
+    doc.addPage();
+    pdfHeader(doc, `${m.name} — ${tabLabel(m.element)} (×${m.qty})`, `Project: ${proj.name}`);
+    const yy = rowsToAutoTable(doc, 34, m.rows, `${m.name} — BBS`, TAB_COLORS[m.element]||[255,122,41]);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(111,207,151);
+    doc.text(`Unit weight: ${fmt(m.unitWt,1)} kg  ×  ${m.qty}  =  ${fmt(m.totalWt,1)} kg`, 14, yy+9);
+  });
+
+  pdfFooter(doc);
+  deliverPDF(doc, `${proj.name.replace(/[^a-z0-9]+/gi,'_')}_Project_${Date.now()}.pdf`);
+}
+
+// ===================== TEXT SHARE FALLBACK (only used if PDF engine is unavailable, e.g. offline) =====================
+function deliverText(text, label){
+  if(!text || !text.trim()){
+    toast('Nothing to share yet', 'warn');
+    return;
+  }
+  if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+    try{
+      window.AppInventor.setWebViewString(text);
+      toast(`${label} sent to Share menu`, 'good');
+      return;
+    }catch(e){ /* fall through */ }
+  }
+  if(navigator.share){
+    navigator.share({text}).then(()=>{
+      toast(`${label} shared`, 'good');
+    }).catch(()=>{ copyFallback(text, label); });
+    return;
+  }
+  copyFallback(text, label);
+}
+function copyFallback(text, label){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      toast(`${label} copied to clipboard`, 'good');
+    }).catch(()=>{
+      toast('Could not share or copy — try Print instead', 'warn');
+      window.print();
+    });
+  } else {
+    window.print();
+  }
+}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', async ()=>{
+  updateStorageBanner();
+  const restored = await tryRestoreFromShadow();
+  if(restored){
+    renderProjectSwitcher();
+    renderMemberList();
+    toast('Restored your projects from backup', 'good');
+  }
+  if(!getCurrentProject()){
+    showCreateProjectModal(true);
+  }
+  updateProjectBadge();
+  measureAndSetHeight();
+
+  const shareMainBtn = $('shareMainBtn');
+  if(shareMainBtn) shareMainBtn.addEventListener('click', generateFullCalcPDF);
+  const shareProjBtn = $('shareProjBtn');
+  if(shareProjBtn) shareProjBtn.addEventListener('click', generateProjectPDF);
+  document.querySelectorAll('.btn-tab-pdf').forEach(btn=>{
+    btn.addEventListener('click', ()=>generateElementPDF(btn.dataset.tab));
+  });
+  const restoreInput = $('restoreFileInput');
+  if(restoreInput) restoreInput.addEventListener('change', ()=>importBackup(restoreInput.files[0]));
+});
+// =====================================================================
+
+recalcAll();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+<div class="toast" id="toast"></div>
+</body>
+</html>
