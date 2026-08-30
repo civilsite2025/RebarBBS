@@ -10,27 +10,25 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BBS Calc">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="icon" href="icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
 <style>
   :root{
     --bg:#14171B; --panel:#1E2228; --panel-alt:#262B33; --line:#333941;
     --text:#ECEAE4; --muted:#8B93A0; --accent:#FF7A29; --steel:#5FA8D3; --good:#6FCF97;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;}
   body{padding-bottom:84px;}
-  h1,h2,h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.02em;margin:0;}
+  h1,h2,h3{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-stretch:condensed;font-weight:700;letter-spacing:.02em;margin:0;}
   .wrap{max-width:640px;margin:0 auto;padding:14px 14px 8px;}
   header.top{padding:20px 16px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:6;}
-  header.top .eyebrow{color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;}
+  header.top .eyebrow{color:var(--accent);font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;}
   header.top h1{font-size:26px;line-height:1;color:var(--text);}
-  header.top .sub{color:var(--muted);font-size:12px;margin-top:5px;font-family:'IBM Plex Mono',monospace;}
+  header.top .sub{color:var(--muted);font-size:12px;margin-top:5px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
 
   .tabs{display:flex;gap:6px;position:sticky;top:76px;background:var(--bg);z-index:5;padding:10px 14px;border-bottom:1px solid var(--line);max-width:640px;margin:0 auto;}
-  .tabs button{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:10px 4px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.03em;text-transform:uppercase;}
+  .tabs button{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:10px 4px;border-radius:8px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;letter-spacing:.03em;text-transform:uppercase;}
   .tabs button.active{background:var(--accent);border-color:var(--accent);color:#1A1200;font-weight:600;}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px;}
@@ -38,30 +36,30 @@
   .card .desc{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.4;}
   .row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
   .field{flex:1 1 110px;min-width:100px;}
-  .field label{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-family:'IBM Plex Mono',monospace;}
-  input[type=number],select{width:100%;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);padding:10px 8px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:15px;}
+  .field label{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  input[type=number],select{width:100%;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);padding:10px 8px;border-radius:6px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:15px;}
   input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);}
   select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
   .checkline{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:2px;}
   .checkline input{width:16px;height:16px;}
 
   details.adv{margin-top:6px;}
-  details.adv summary{cursor:pointer;color:var(--steel);font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;}
+  details.adv summary{cursor:pointer;color:var(--steel);font-size:12px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;letter-spacing:.03em;}
   details.adv .row{margin-top:10px;}
 
   .diagram{display:flex;justify-content:center;padding:6px 0 4px;}
   .diagram svg{width:100%;max-width:220px;height:auto;}
 
   .outline{margin-top:10px;background:var(--panel-alt);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;}
-  .outline .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace;}
-  .outline .val{font-family:'IBM Plex Mono',monospace;font-size:21px;color:var(--accent);font-weight:600;margin-top:2px;}
+  .outline .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;}
+  .outline .val{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:21px;color:var(--accent);font-weight:600;margin-top:2px;}
   .outline .val small{color:var(--muted);font-size:13px;margin-left:6px;}
-  .outline .formula{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px;word-break:break-word;}
+  .outline .formula{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;color:var(--muted);margin-top:6px;word-break:break-word;}
 
-  .subhead{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--line);}
+  .subhead{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:11px;color:var(--steel);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--line);}
   .subhead:first-of-type{border-top:none;padding-top:0;margin-top:4px;}
 
-  table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12px;margin-top:4px;}
+  table{width:100%;border-collapse:collapse;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:12px;margin-top:4px;}
   th,td{padding:7px 5px;text-align:right;border-bottom:1px solid var(--line);}
   th:first-child,td:first-child{text-align:left;}
   th{color:var(--muted);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
@@ -70,21 +68,23 @@
   .ref-table{overflow-x:auto;}
 
   .bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:10;}
-  .bar .lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
-  .bar .val{font-family:'IBM Plex Mono',monospace;font-size:22px;color:var(--good);font-weight:600;}
-  .bar button{background:var(--accent);color:#1A1200;border:none;padding:10px 16px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.02em;}
+  .bar .lbl{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .bar .val{font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:22px;color:var(--good);font-weight:600;}
+  .bar button{background:var(--accent);color:#1A1200;border:none;padding:10px 16px;border-radius:6px;font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-weight:600;font-size:13px;letter-spacing:.02em;}
 
   .note{font-size:11.5px;color:var(--muted);line-height:1.5;padding:6px 16px 20px;}
   .note b{color:var(--text);}
   .tabpanel{display:none;}
   .tabpanel.active{display:block;}
 
+  @page{ margin: 12mm; }
   @media print{
     .bar,.tabs,details.adv,header.top .sub{display:none!important;}
     body{background:#fff;color:#000;padding-bottom:0;}
-    .card{border:1px solid #999;background:#fff;}
+    .wrap{max-width:100%;}
+    .card{border:1px solid #999;background:#fff;break-inside:avoid;page-break-inside:avoid;}
     .outline{background:#f4f4f4;}
-    .tabpanel{display:block!important;}
+    table{font-size:11px;}
   }
 </style>
 </head>
@@ -175,8 +175,8 @@
         <div class="formula" id="beamStirrupFormula"></div>
       </div>
       <div class="row" style="margin-top:10px;">
-        <div class="field"><label>No. of stirrups</label><div id="beamStirrupCount" style="font-family:'IBM Plex Mono',monospace;font-size:16px;padding-top:6px;">—</div></div>
-        <div class="field"><label>Steel (this dia)</label><div id="beamStirrupWeight" style="font-family:'IBM Plex Mono',monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
+        <div class="field"><label>No. of stirrups</label><div id="beamStirrupCount" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;">—</div></div>
+        <div class="field"><label>Steel (this dia)</label><div id="beamStirrupWeight" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
       </div>
     </div>
 
@@ -206,7 +206,7 @@
 
     <div class="card">
       <h2>Beam BBS summary</h2>
-      <table id="beamBbsTable"><thead><tr><th>Bar mark</th><th>Dia</th><th>Len/pc</th><th>Qty</th><th>Total (m)</th><th>Weight</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="5">Beam total</td><td class="tot" id="beamGrandTotal">—</td></tr></tfoot></table>
+      <table id="beamBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Beam total</td><td class="tot" id="beamGrandTotal">—</td></tr></tfoot></table>
     </div>
   </section>
 
@@ -232,8 +232,8 @@
         <div class="formula" id="colTieFormula"></div>
       </div>
       <div class="row" style="margin-top:10px;">
-        <div class="field"><label>No. of ties</label><div id="colTieCount" style="font-family:'IBM Plex Mono',monospace;font-size:16px;padding-top:6px;">—</div></div>
-        <div class="field"><label>Steel (this dia)</label><div id="colTieWeight" style="font-family:'IBM Plex Mono',monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
+        <div class="field"><label>No. of ties</label><div id="colTieCount" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;">—</div></div>
+        <div class="field"><label>Steel (this dia)</label><div id="colTieWeight" style="font-family:ui-monospace,'Roboto Mono','SF Mono',Menlo,Consolas,monospace;font-size:16px;padding-top:6px;color:var(--good);">—</div></div>
       </div>
     </div>
 
@@ -251,7 +251,7 @@
 
     <div class="card">
       <h2>Column BBS summary</h2>
-      <table id="colBbsTable"><thead><tr><th>Bar mark</th><th>Dia</th><th>Len/pc</th><th>Qty</th><th>Total (m)</th><th>Weight</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="5">Column total</td><td class="tot" id="colGrandTotal">—</td></tr></tfoot></table>
+      <table id="colBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Column total</td><td class="tot" id="colGrandTotal">—</td></tr></tfoot></table>
     </div>
   </section>
 
@@ -285,7 +285,7 @@
 
     <div class="card">
       <h2>Footing BBS summary</h2>
-      <table id="footBbsTable"><thead><tr><th>Bar mark</th><th>Dia</th><th>Len/pc</th><th>Qty</th><th>Total (m)</th><th>Weight</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="5">Footing total</td><td class="tot" id="footGrandTotal">—</td></tr></tfoot></table>
+      <table id="footBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Footing total</td><td class="tot" id="footGrandTotal">—</td></tr></tfoot></table>
     </div>
   </section>
 
@@ -320,7 +320,7 @@
 
     <div class="card">
       <h2>Slab BBS summary</h2>
-      <table id="slabBbsTable"><thead><tr><th>Bar mark</th><th>Dia</th><th>Len/pc</th><th>Qty</th><th>Total (m)</th><th>Weight</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="5">Slab total</td><td class="tot" id="slabGrandTotal">—</td></tr></tfoot></table>
+      <table id="slabBbsTable"><thead><tr><th>Sl</th><th>Shape</th><th>No.</th><th>Dia</th><th>Spacing</th><th>Cut. Len (mm)</th><th>Total (m)</th><th>Wt (kg)</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="7">Slab total</td><td class="tot" id="slabGrandTotal">—</td></tr></tfoot></table>
     </div>
   </section>
 
@@ -364,8 +364,8 @@ function drawSection(svgId, b, D, cover, barDia){
     <circle cx="${x0+w-c-r-1}" cy="${y0+c+r+1}" r="${r}" fill="#5FA8D3"/>
     <circle cx="${x0+c+r+1}" cy="${y0+h-c-r-1}" r="${r}" fill="#6FCF97"/>
     <circle cx="${x0+w-c-r-1}" cy="${y0+h-c-r-1}" r="${r}" fill="#6FCF97"/>
-    <text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">${b} mm</text>
-    <text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="IBM Plex Mono" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${D} mm</text>
+    <text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle">${b} mm</text>
+    <text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${D} mm</text>
   `;
 }
 
@@ -386,8 +386,8 @@ function drawPlan(svgId, L, W, nX, nY){
     const x = x0 + (w/(nX-1||1))*i;
     lines += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y0+h}" stroke="#6FCF97" stroke-width="1.2" opacity="0.75"/>`;
   }
-  lines += `<text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">${L} mm</text>`;
-  lines += `<text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="IBM Plex Mono" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${W} mm</text>`;
+  lines += `<text x="${x0+w/2}" y="${y0-6}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle">${L} mm</text>`;
+  lines += `<text x="${x0-6}" y="${y0+h/2}" fill="#8B93A0" font-size="9" font-family="ui-monospace, monospace" text-anchor="middle" transform="rotate(-90 ${x0-6} ${y0+h/2})">${W} mm</text>`;
   svg.innerHTML = lines;
 }
 
@@ -395,10 +395,10 @@ function renderBbs(tableId, totalId, rows){
   const tbody = $(tableId).querySelector('tbody');
   tbody.innerHTML = '';
   let grand = 0;
-  rows.forEach(r=>{
+  rows.forEach((r,i)=>{
     grand += r.wt;
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.mark}</td><td>${r.dia}mm</td><td>${fmt(r.length)}mm</td><td>${r.qty}</td><td>${fmt(r.totalM,1)}</td><td class="tot">${fmt(r.wt,1)}kg</td>`;
+    tr.innerHTML = `<td>${i+1}</td><td>${r.shape||r.mark}</td><td>${r.qty}</td><td>${r.dia}mm</td><td>${r.spacing?r.spacing+'mm':'—'}</td><td>${fmt(r.length)}</td><td>${fmt(r.totalM,1)}</td><td class="tot">${fmt(r.wt,1)}</td>`;
     tbody.appendChild(tr);
   });
   $(totalId).textContent = fmt(grand,1)+' kg';
@@ -469,10 +469,12 @@ function recalcBeam(hookMult, bendMult){
     $(prefix+'CL').innerHTML = `${fmt(length)} <small>mm</small>`;
     $(prefix+'Formula').textContent = formula;
     const totalM = (length*qty)/1000;
-    return {mark: prefix==='beamBot'?'Bottom main':'Top main', dia, length, qty, totalM, wt: totalM*unitWeight(dia)};
+    const posLabel = prefix==='beamBot'?'Bottom main':'Top main';
+    const shape = type==='cranked' ? `${posLabel} — Cranked` : `${posLabel} — Straight`;
+    return {mark: posLabel, shape, dia, length, qty, spacing:null, totalM, wt: totalM*unitWeight(dia)};
   }
   const botRow = mainBar('beamBot'), topRow = mainBar('beamTop');
-  const rows = [{mark:'Stirrup', dia:stDia, length:stirrupCL, qty:nStirrups, totalM:stirrupTotalM, wt:stirrupWt}, botRow, topRow].filter(r=>r.qty>0);
+  const rows = [{mark:'Stirrup', shape:'Rectangular stirrup', dia:stDia, length:stirrupCL, qty:nStirrups, spacing, totalM:stirrupTotalM, wt:stirrupWt}, botRow, topRow].filter(r=>r.qty>0);
   elementTotals.beam = renderBbs('beamBbsTable','beamGrandTotal', rows);
 }
 
@@ -505,7 +507,10 @@ function recalcColumn(hookMult, bendMult, lapMult){
   const mainTotalM = (mainLength*qty)/1000;
   const mainWt = mainTotalM*unitWeight(mainDia);
 
-  const rows = [{mark:'Tie', dia:tieDia, length:tieCL, qty:nTies, totalM:tieTotalM, wt:tieWt}, {mark:'Main vertical', dia:mainDia, length:mainLength, qty, totalM:mainTotalM, wt:mainWt}].filter(r=>r.qty>0);
+  const rows = [
+    {mark:'Tie', shape:'Rectangular tie', dia:tieDia, length:tieCL, qty:nTies, spacing, totalM:tieTotalM, wt:tieWt},
+    {mark:'Main vertical', shape:spliceOn?'Straight — with lap':'Straight', dia:mainDia, length:mainLength, qty, spacing:null, totalM:mainTotalM, wt:mainWt}
+  ].filter(r=>r.qty>0);
   elementTotals.col = renderBbs('colBbsTable','colGrandTotal', rows);
 }
 
@@ -533,8 +538,8 @@ function recalcFooting(hookMult){
   const yTotalM = (yCL*yQty)/1000;
 
   const rows = [
-    {mark:'Along L (dir-1)', dia:xDia, length:xCL, qty:xQty, totalM:xTotalM, wt:xTotalM*unitWeight(xDia)},
-    {mark:'Along W (dir-2)', dia:yDia, length:yCL, qty:yQty, totalM:yTotalM, wt:yTotalM*unitWeight(yDia)}
+    {mark:'Along L (dir-1)', shape:hookOn?'Straight — 90° hooks':'Straight', dia:xDia, length:xCL, qty:xQty, spacing:xSpacing, totalM:xTotalM, wt:xTotalM*unitWeight(xDia)},
+    {mark:'Along W (dir-2)', shape:hookOn?'Straight — 90° hooks':'Straight', dia:yDia, length:yCL, qty:yQty, spacing:ySpacing, totalM:yTotalM, wt:yTotalM*unitWeight(yDia)}
   ];
   elementTotals.foot = renderBbs('footBbsTable','footGrandTotal', rows);
 }
@@ -563,8 +568,8 @@ function recalcSlab(){
   const distTotalM = (distCL*distQty)/1000;
 
   const rows = [
-    {mark:'Main (Lx)', dia:mainDia, length:mainCL, qty:mainQty, totalM:mainTotalM, wt:mainTotalM*unitWeight(mainDia)},
-    {mark:'Distribution (Ly)', dia:distDia, length:distCL, qty:distQty, totalM:distTotalM, wt:distTotalM*unitWeight(distDia)}
+    {mark:'Main (Lx)', shape:'Straight', dia:mainDia, length:mainCL, qty:mainQty, spacing:mainSpacing, totalM:mainTotalM, wt:mainTotalM*unitWeight(mainDia)},
+    {mark:'Distribution (Ly)', shape:'Straight', dia:distDia, length:distCL, qty:distQty, spacing:distSpacing, totalM:distTotalM, wt:distTotalM*unitWeight(distDia)}
   ];
   elementTotals.slab = renderBbs('slabBbsTable','slabGrandTotal', rows);
 }
